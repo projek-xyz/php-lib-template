@@ -6,7 +6,7 @@ on:
       - master
     paths:
       - .github/workflows/docs.yml
-      - docs/*
+      - .github/wiki/*
 
 jobs:
   wiki:
@@ -22,5 +22,5 @@ jobs:
         REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/projek-xyz/template.wiki.git
       run: |
         git config user.name ${{ github.actor }}
-        git subtree split -P docs/wiki -b wiki-page
-        git push -f $REPO wiki-page:master
+        git subtree split -P .github/wiki -b gh-wiki
+        git push -f $REPO gh-wiki:master
