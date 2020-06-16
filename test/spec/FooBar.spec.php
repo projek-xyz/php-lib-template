@@ -10,7 +10,11 @@ describe(FooBar::class, function () {
         return new FooBar;
     });
 
-    it('could handle array callable', function () {
+    it('Should be an instance of', function () {
         expect($this->foobar)->toBeAnInstanceOf(FooBar::class);
+    });
+
+    it('Should be equal', function () {
+        expect($this->foobar->lorem())->toEqual('Lorem ipsum');
     });
 });
