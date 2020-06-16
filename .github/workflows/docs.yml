@@ -19,7 +19,7 @@ jobs:
 
     - name: Publish Wiki
       env:
-        REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com:projek-xyz/template.wiki.git
+        REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/projek-xyz/template.wiki.git
       run: |
         git config user.name ${{ github.actor }}
         git subtree push $REPO -P docs/wiki master
