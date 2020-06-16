@@ -1,0 +1,27 @@
+name: Documents
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - docs/*
+
+env:
+  COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+  CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+  CC_TEST_REPORTER_URL: https://codeclimate.com/downloads/test-reporter/test-reporter-0.7.0-linux-amd64
+
+jobs:
+  test:
+    name: Runs on PHP ${{ matrix.php-versions }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@master
+
+    - name: Publish Wiki
+      env:
+        REPO: git@github.com:projek-xyz/template.wiki.git
+      run: git subtree push $REPO -P docs/wiki master
