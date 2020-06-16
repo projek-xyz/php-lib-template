@@ -1,0 +1,49 @@
+{
+    "name": "projek-xyz/template",
+    "description": "Project Template",
+    "keywords": ["project", "template"],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Fery Wardiyanto",
+            "email": "ferywardiyanto@gmail.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/projek-xyz/template/issues",
+        "source": "https://github.com/projek-xyz/template"
+    },
+    "scripts": {
+        "spec": [
+            "@lint",
+            "@test"
+        ],
+        "test": "kahlan --config=test/config.php",
+        "lint": "phpcs --standard=PSR2 -n -p src"
+    },
+    "autoload": {
+        "psr-4": {
+            "Projek\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Stubs\\": "test/stub"
+        }
+    },
+    "require": {
+        "php": "^7.0"
+    },
+    "require-dev": {
+        "kahlan/kahlan": "^4.7",
+        "squizlabs/php_codesniffer": "^3.5"
+    },
+    "config": {
+      "preferred-install": "dist",
+      "sort-packages": true,
+      "optimize-autoloader": true
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}

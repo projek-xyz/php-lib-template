@@ -1,0 +1,8 @@
+# Test Report Files
+# --------------------------
+codeclimate.*.json
+codeclimate.json
+coveralls.*.json
+coveralls.json
+lcov.*.info
+lcov.info

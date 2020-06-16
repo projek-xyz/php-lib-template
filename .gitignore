@@ -1,0 +1,38 @@
+# Generic
+# --------------------------
+Thumbs.db
+Desktop.ini
+.directory
+*.cache
+*.old
+*.log
+*.tmp
+*.zip
+._
+*~
+
+# Development files
+# --------------------------
+.php-version
+tests/clover.xml
+coveralls-upload.json
+
+# Dependency folders
+# --------------------------
+composer.lock
+node_modules
+package-lock.json
+vendor
+yarn.lock
+
+# IDE Project Configurations
+# --------------------------
+.idea
+.settings
+.vscode
+.project
+*.sublime-*
+
+# But Keep these
+# --------------------------
+!.gitkeep
