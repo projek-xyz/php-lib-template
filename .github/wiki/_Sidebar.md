@@ -1,6 +1,7 @@
-## Content
+## Contents
 
-- [Getting Started](#)
+- [Home](Home)
+- [Changelog](https://github.com/projek-xyz/template/blob/master/CHANGELOG.md)
 
 ### Usage
 
