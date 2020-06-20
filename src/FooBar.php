@@ -4,7 +4,7 @@ namespace Projek;
 
 class FooBar
 {
-    public function lorem() : string
+    public function lorem(): string
     {
         return 'Lorem ipsum';
     }

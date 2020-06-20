@@ -20,7 +20,7 @@
             "@test"
         ],
         "test": "kahlan --config=test/config.php",
-        "lint": "phpcs --standard=PSR2 -n -p src"
+        "lint": "phpcs --standard=PSR12 -n -p src"
     },
     "autoload": {
         "psr-4": {
