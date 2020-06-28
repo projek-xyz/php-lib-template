@@ -39,6 +39,13 @@
         "kahlan/kahlan": "^4.7",
         "squizlabs/php_codesniffer": "^3.5"
     },
+    "extra": {
+        "hooks": {
+            "pre-commit": "composer spec",
+            "commit-msg": "commitlint -e -V",
+            "pre-push": "composer spec"
+        }
+    },
     "config": {
       "preferred-install": "dist",
       "sort-packages": true,
