@@ -12,6 +12,8 @@ engines:
     enabled: true
   phpcodesniffer:
     enabled: true
+    config:
+        standard: "PSR12"
   phpmd:
     enabled: true
 
