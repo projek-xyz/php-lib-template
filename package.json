@@ -9,12 +9,12 @@
     },
     "devDependencies": {
         "@commitlint/cli": "^9.0",
-        "@commitlint/config-conventional": "^9.0",
+        "@feryardiant/commitlint-config": "^0.0.1",
         "standard-version": "^8.0"
     },
     "commitlint": {
         "extends": [
-            "@commitlint/config-conventional"
+            "@feryardiant/commitlint-config"
         ]
     },
     "standard-version": {}
