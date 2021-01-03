@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/projek-xyz/template/compare/v0.1.2...v0.1.3) (2021-01-03)
+
+
+### Features
+
+* **php:** add support for php 8.0 ([ee3b21b](https://github.com/projek-xyz/template/commit/ee3b21ba0394a9c91e621e0e58956c1741449aea))
+
 ### [0.1.2](https://github.com/projek-xyz/template/compare/v0.1.1...v0.1.2) (2021-01-03)
 
 
