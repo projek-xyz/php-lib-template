@@ -18,7 +18,7 @@
         "source": "https://github.com/projek-xyz/template"
     },
     "scripts": {
-        "spec": "kahlan --config=test/config.php",
+        "spec": "kahlan --config=tests/config.php",
         "lint": "phpcs --standard=PSR12 -n -p src",
         "test": [
             "@lint",

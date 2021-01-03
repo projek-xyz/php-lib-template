@@ -1,9 +1,7 @@
 <?php
 
 use Projek\FooBar;
-use function Kahlan\describe;
-use function Kahlan\expect;
-use function Kahlan\given;
+use function Kahlan\{describe, expect, given};
 
 describe(FooBar::class, function () {
     given('foobar', function () {
