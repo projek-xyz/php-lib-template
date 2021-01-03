@@ -10,7 +10,7 @@ on:
     paths:
       - .github/workflows/test.yml
       - src/*
-      - test/*
+      - tests/*
 
 env:
   COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -27,7 +27,7 @@ jobs:
 
     strategy:
       matrix:
-        php-versions: ['7.1', '7.2', '7.3', '7.4']
+        php-versions: ['7.1', '7.2', '7.3', '7.4', '8.0']
 
     steps:
     - name: Checkout
@@ -59,15 +59,15 @@ jobs:
     # https://github.com/deivid-rodriguez/pry-byebug/blob/377e5b7d229a157bb896f21d776f71fc389a5c00/.github/workflows/ubuntu.yml#L46-L57
     - name: Set ENV for CodeClimate (pull_request)
       if: github.event_name == 'pull_request'
-      run: echo "::set-env name=GIT_BRANCH::$GITHUB_HEAD_REF"
+      run: echo "$GITHUB_HEAD_REF" >> $GIT_BRANCH
 
     - name: Spec
       run: composer spec
 
     - name: CodeClimate
       env:
-        LCOV_REPORT: ${{ github.workspace }}/test/lcov.info
-        CODECLIMATE_REPORT: ${{ github.workspace }}/test/codeclimate.${{ matrix.php-versions }}.json
+        LCOV_REPORT: ${{ github.workspace }}/tests/lcov.info
+        CODECLIMATE_REPORT: ${{ github.workspace }}/tests/codeclimate.${{ matrix.php-versions }}.json
       run: |
         curl -LSs $CC_TEST_REPORTER_URL > ./cc-test-reporter && chmod +x ./cc-test-reporter
         ./cc-test-reporter format-coverage -t lcov -o $CODECLIMATE_REPORT $LCOV_REPORT
@@ -76,14 +76,14 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: test/lcov.info
+        path-to-lcov: tests/lcov.info
         parallel: true
 
     - name: Save Coverage Reports
       uses: actions/upload-artifact@v2
       with:
         name: test-reports
-        path: ${{ github.workspace }}/test/*.json
+        path: ${{ github.workspace }}/tests/*.json
 
   reports:
     name: Reports
@@ -100,7 +100,7 @@ jobs:
       uses: coverallsapp/github-action@master
       with:
         github-token: ${{ secrets.github_token }}
-        path-to-lcov: test/lcov.info
+        path-to-lcov: tests/lcov.info
         parallel-finished: true
 
     - name: CodeClimate Report
