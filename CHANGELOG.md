@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/projek-xyz/template/compare/v0.1.1...v0.1.2) (2021-01-03)
+
+
+### Features
+
+* **ci:** change default phpcs standard to PSR12 ([4222d95](https://github.com/projek-xyz/template/commit/4222d95b136b3c94df7b8c262ab99fd1661678ae))
+* **dev:** make use of brainmaestro/composer-git-hooks ([1ee390e](https://github.com/projek-xyz/template/commit/1ee390ebb795979ef9834ee300c3da41d01d44b9))
+* **test:** rename test directory ([aab946d](https://github.com/projek-xyz/template/commit/aab946da037c541ea6486685d3a401178c70a165))
+
 ### [0.1.1](https://github.com/projek-xyz/template/compare/v0.1.0...v0.1.1) (2020-06-16)
 
 
