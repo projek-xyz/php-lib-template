@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.2.0](https://github.com/projek-xyz/template/compare/v0.1.3...v0.2.0) (2021-03-07)
+
+
+### Features
+
+* update docs and release workflow ([16334ec](https://github.com/projek-xyz/template/commit/16334ecea48a9acbf1c433a9f98ef7d8a4058bed))
+
 ### [0.1.3](https://github.com/projek-xyz/template/compare/v0.1.2...v0.1.3) (2021-01-03)
 
 

@@ -11,7 +11,7 @@ on:
 jobs:
   wiki:
     name: Publish Wiki
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - name: Checkout
@@ -19,7 +19,7 @@ jobs:
 
     - name: Publish Wiki
       env:
-        REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/projek-xyz/template.wiki.git
+        REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
       run: |
         git config user.name ${{ github.actor }}
         git subtree split -P .github/wiki -b gh-wiki
