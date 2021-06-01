@@ -14,8 +14,7 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/projek-xyz/template/issues",
-        "source": "https://github.com/projek-xyz/template"
+        "source": "https://github.com/projek-xyz/php-lib-template"
     },
     "scripts": {
         "spec": "kahlan --config=tests/config.php",
@@ -37,6 +36,12 @@
         "preferred-install": "dist",
         "sort-packages": true
     },
+    "funding": [
+        {
+            "type": "ko-fi",
+            "url": "https://ko-fi.com/feryardiant"
+        }
+    ],
     "extra": {
         "hooks": {
             "pre-commit": "composer spec",
