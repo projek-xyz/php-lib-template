@@ -14,12 +14,10 @@ Desktop.ini
 # Development files
 # --------------------------
 .php-version
-tests/clover.xml
 coveralls-upload.json
 
 # Dependency folders
 # --------------------------
-composer.lock
 node_modules
 package-lock.json
 vendor
