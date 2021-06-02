@@ -1,11 +1,8 @@
 {
     "name": "projek-xyz/template",
-    "type": "library",
     "description": "Project Template",
-    "keywords": [
-        "project",
-        "template"
-    ],
+    "keywords": ["project", "template"],
+    "type": "library",
     "license": "MIT",
     "authors": [
         {
@@ -16,6 +13,12 @@
     "support": {
         "source": "https://github.com/projek-xyz/php-lib-template"
     },
+    "funding": [
+        {
+            "type": "ko-fi",
+            "url": "https://ko-fi.com/feryardiant"
+        }
+    ],
     "scripts": {
         "spec": "kahlan --config=tests/config.php",
         "lint": "phpcs --standard=PSR12 -n -p src",
@@ -23,6 +26,16 @@
             "@lint",
             "@spec"
         ]
+    },
+    "autoload": {
+        "psr-4": {
+            "Projek\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Stubs\\": "tests/stubs"
+        }
     },
     "require": {
         "php": ">=7.0"
@@ -35,29 +48,6 @@
         "optimize-autoloader": true,
         "preferred-install": "dist",
         "sort-packages": true
-    },
-    "funding": [
-        {
-            "type": "ko-fi",
-            "url": "https://ko-fi.com/feryardiant"
-        }
-    ],
-    "extra": {
-        "hooks": {
-            "pre-commit": "composer spec",
-            "commit-msg": "commitlint -e -V",
-            "pre-push": "composer spec"
-        }
-    },
-    "autoload": {
-        "psr-4": {
-            "Projek\\": "src"
-        }
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "Stubs\\": "tests/stubs"
-        }
     },
     "minimum-stability": "dev",
     "prefer-stable": true
