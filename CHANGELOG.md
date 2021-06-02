@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.3.0](https://github.com/projek-xyz/template/compare/v0.2.0...v0.3.0) (2021-06-02)
+
+
+### Features
+
+* **test:** add PHP 8.1 test ([e358a08](https://github.com/projek-xyz/template/commit/e358a08d125422217cb2229d13e69bafe7ff3a3e))
+
+
+### Bug Fixes
+
+* **docs:** fix packagist link ([6e323bd](https://github.com/projek-xyz/template/commit/6e323bd3fc80f131ce8765eb7c16e0972b690352))
+
 ## [0.2.0](https://github.com/projek-xyz/template/compare/v0.1.3...v0.2.0) (2021-03-07)
 
 
