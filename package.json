@@ -9,7 +9,7 @@
     },
     "devDependencies": {
         "@commitlint/cli": "^16.0",
-        "@feryardiant/commitlint-config": "~0.1.4",
+        "@feryardiant/commitlint-config": "~0.2.0",
         "standard-version": "^9.0"
     },
     "commitlint": {
