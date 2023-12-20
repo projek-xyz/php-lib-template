@@ -1,7 +1,7 @@
 ## Contents
 
 - [Home](Home)
-- [Changelog](https://github.com/projek-xyz/template/blob/master/CHANGELOG.md)
+- [Changelog](https://github.com/projek-xyz/php-lib-template/blob/main/CHANGELOG.md)
 
 ### Usage
 
