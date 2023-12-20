@@ -18,7 +18,6 @@ jobs:
 
     outputs:
       composer-cache: ${{ steps.composer-cache.outputs.dir }}
-      # target-branch: ${{ steps.target-branch.outputs.branch }}
 
     steps:
       - name: Checkout
@@ -30,13 +29,6 @@ jobs:
       - name: Get Composer cache directory
         id: composer-cache
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-
-      # https://docs.github.com/en/actions/learn-github-actions/variables
-      # https://github.com/deivid-rodriguez/pry-byebug/blob/377e5b7d229a157bb896f21d776f71fc389a5c00/.github/workflows/ubuntu.yml#L46-L57
-      # - name: Get target branch name (pull_request)
-      #   id: target-branch
-      #   if: github.event_name == 'pull_request'
-      #   run: echo "branch=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_OUTPUT
 
   test:
     name: Runs on PHP ${{ matrix.php }}
@@ -68,7 +60,7 @@ jobs:
           restore-keys: ${{ runner.os }}-${{ matrix.php }}-composer-
 
       - name: Install dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
+        run: composer update --prefer-dist --no-progress --no-suggest
 
       - name: Spec
         run: composer spec
@@ -96,9 +88,9 @@ jobs:
 
       - name: Save Coverage Reports
         if: github.actor != 'dependabot[bot]'
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
-          name: test-reports
+          name: test-reports-${{ matrix.php }}
           path: tests/codeclimate.*.json
 
   reports:
@@ -109,9 +101,10 @@ jobs:
 
     steps:
       - name: Download Reports
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
-          name: test-reports
+          pattern: test-reports-*
+          merge-multiple: true
 
       - name: Coveralls Report
         uses: coverallsapp/github-action@v2
