@@ -15,8 +15,8 @@
     },
     "funding": [
         {
-            "type": "ko-fi",
-            "url": "https://ko-fi.com/feryardiant"
+            "type": "github",
+            "url": "https://github.com/sponsors/feryardiant"
         }
     ],
     "scripts": {
