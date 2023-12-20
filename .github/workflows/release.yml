@@ -2,24 +2,23 @@ name: Release
 
 on:
   push:
-    tags:
-      - 'v*.*.*'
+    tags: ['v*.*.*']
 
 jobs:
   publish:
     name: Publish Release
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v1
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Read Changelog file
-      run: npx @feryardiant/read-changelog > PUBLISH.txt
+      - name: Read Changelog file
+        run: npx @feryardiant/read-changelog > PUBLISH.txt
 
-    - name: Publish
-      uses: softprops/action-gh-release@v1
-      env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        body_path: PUBLISH.txt
+      - name: Publish
+        uses: softprops/action-gh-release@v1
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          body_path: PUBLISH.txt
