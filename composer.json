@@ -41,7 +41,7 @@
         "php": ">=7.0"
     },
     "require-dev": {
-        "kahlan/kahlan": "^5.0",
+        "kahlan/kahlan": "^5.2",
         "squizlabs/php_codesniffer": "^3.5"
     },
     "config": {
