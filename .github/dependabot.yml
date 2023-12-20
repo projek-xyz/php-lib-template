@@ -6,10 +6,6 @@ updates:
     schedule:
       interval: monthly
       timezone: "Asia/Jakarta"
-    versioning-strategy: increase-if-necessary
-    groups:
-      dependencies:
-        patterns: ['*']
 
   - package-ecosystem: composer
     directory: "/"
