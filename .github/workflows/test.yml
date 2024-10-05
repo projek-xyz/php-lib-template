@@ -1,6 +1,8 @@
 name: Tests
 
 on:
+  # schedule: # scheduled to run at 23.00 on Saturday (UTC), means 6.00 on Monday (WIB)
+  #   - cron: '0 23 * * 6'
   pull_request:
     branches: [main]
   push:
@@ -14,8 +16,10 @@ on:
 jobs:
   prepare:
     name: Prepare
-    uses: projek-xyz/actions/.github/workflows/configure.yml@main
-    secrets: inherit
+    uses: feryardiant/actions/.github/workflows/configure.yml@main
+    secrets:
+      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+      COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
   tests:
     name: Runs on PHP ${{ matrix.php }}
@@ -24,8 +28,6 @@ jobs:
     env:
       GIT_COMMIT_SHA: ${{ github.sha }}
       GIT_BRANCH: ${{ github.ref_name }}
-    outputs:
-      has-reports: ${{ steps.reports.outputs.has-reports }}
 
     strategy:
       fail-fast: false
@@ -56,8 +58,8 @@ jobs:
         run: composer test
 
       - name: Generate reports for CodeClimate
+        if: needs.prepare.outputs.has-codeclimate == 'true'
         id: reports
-        if: github.actor != 'dependabot[bot]' || needs.prepare.outputs.should-reports == '1'
         env:
           CODECLIMATE_REPORT: tests/codeclimate.${{ matrix.php }}.json
           CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
@@ -65,10 +67,9 @@ jobs:
         run: |
           curl -LSs $CC_TEST_REPORTER_URL > ./cc-test-reporter && chmod +x ./cc-test-reporter
           ./cc-test-reporter format-coverage -t lcov -o $CODECLIMATE_REPORT tests/lcov.info
-          echo "has-reports=1" >> $GITHUB_OUTPUT
 
       - name: Generate reports for Coveralls
-        if: steps.reports.outputs.has-reports == '1'
+        if: needs.prepare.outputs.has-coveralls == 'true'
         uses: coverallsapp/github-action@v2
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -79,7 +80,7 @@ jobs:
           parallel: true
 
       - name: Save Coverage Reports
-        if: steps.reports.outputs.has-reports == '1'
+        if: needs.prepare.outputs.has-codeclimate == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.php }}
@@ -87,10 +88,11 @@ jobs:
 
   reports:
     name: Reports
-    if: needs.tests.outputs.has-reports == '1'
-    uses: projek-xyz/actions/.github/workflows/report.yml@main
-    secrets: inherit
-    needs: tests
+    needs: [prepare, tests]
+    if: needs.prepare.outputs.should-reports == '1'
+    uses: feryardiant/actions/.github/workflows/report.yml@main
+    secrets:
+      CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
     with:
-      has-coveralls: true
-      has-codeclimate: true
+      has-coveralls: ${{ needs.prepare.outputs.has-coveralls == 'true' }}
+      has-codeclimate: ${{ needs.prepare.outputs.has-codeclimate == 'true' }}
