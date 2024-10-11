@@ -7,16 +7,13 @@ on:
     branches: [main]
   push:
     branches: [main]
-    paths:
-      - .github/workflows/*.yml
-      - composer.*
-      - src/*
-      - tests/*
 
 jobs:
   prepare:
     name: Prepare
-    uses: feryardiant/actions/.github/workflows/configure.yml@main
+    uses: projek-xyz/actions/.github/workflows/configure.yml@main
+    with:
+      php-version: 8.2
     secrets:
       CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -48,8 +45,8 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ${{ needs.prepare.outputs.composer-cache }}
-          key: ${{ runner.os }}-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
-          restore-keys: ${{ runner.os }}-${{ matrix.php }}-composer-
+          key: php-${{ matrix.php }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: php-${{ matrix.php }}-composer-
 
       - name: Install dependencies
         run: composer update --prefer-dist --no-progress --no-suggest
@@ -58,7 +55,7 @@ jobs:
         run: composer test
 
       - name: Generate reports for CodeClimate
-        if: needs.prepare.outputs.has-codeclimate == 'true'
+        if: needs.prepare.outputs.has-codeclimate == '1'
         id: reports
         env:
           CODECLIMATE_REPORT: tests/codeclimate.${{ matrix.php }}.json
@@ -69,7 +66,7 @@ jobs:
           ./cc-test-reporter format-coverage -t lcov -o $CODECLIMATE_REPORT tests/lcov.info
 
       - name: Generate reports for Coveralls
-        if: needs.prepare.outputs.has-coveralls == 'true'
+        if: needs.prepare.outputs.has-coveralls == '1'
         uses: coverallsapp/github-action@v2
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
@@ -80,7 +77,7 @@ jobs:
           parallel: true
 
       - name: Save Coverage Reports
-        if: needs.prepare.outputs.has-codeclimate == 'true'
+        if: needs.prepare.outputs.has-codeclimate == '1'
         uses: actions/upload-artifact@v4
         with:
           name: test-reports-${{ matrix.php }}
@@ -90,9 +87,9 @@ jobs:
     name: Reports
     needs: [prepare, tests]
     if: needs.prepare.outputs.should-reports == '1'
-    uses: feryardiant/actions/.github/workflows/report.yml@main
+    uses: projek-xyz/actions/.github/workflows/report.yml@main
     secrets:
       CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
     with:
-      has-coveralls: ${{ needs.prepare.outputs.has-coveralls == 'true' }}
-      has-codeclimate: ${{ needs.prepare.outputs.has-codeclimate == 'true' }}
+      has-coveralls: ${{ needs.prepare.outputs.has-coveralls == '1' }}
+      has-codeclimate: ${{ needs.prepare.outputs.has-codeclimate == '1' }}
