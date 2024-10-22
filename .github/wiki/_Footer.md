@@ -4,3 +4,4 @@
 [![Coverage Status](https://img.shields.io/coveralls/github/projek-xyz/php-lib-template/main?style=flat-square&logo=coveralls)](https://coveralls.io/github/projek-xyz/php-lib-template)
 [![Coverage Status](https://img.shields.io/codeclimate/coverage/projek-xyz/template?style=flat-square&logo=code-climate)](https://codeclimate.com/github/projek-xyz/template)
 [![Maintainability](https://img.shields.io/codeclimate/maintainability/projek-xyz/template?style=flat-square&logo=code-climate)](https://codeclimate.com/github/projek-xyz/template/maintainability)
+[![SymfonyInsight Grade](https://img.shields.io/symfony/i/grade/2aa14223-61fd-435b-8cdf-72a7c1d9935a?style=flat-square&logo=symfony)](https://insight.symfony.com/projects/2aa14223-61fd-435b-8cdf-72a7c1d9935a)
