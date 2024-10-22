@@ -3,17 +3,22 @@
 Thumbs.db
 Desktop.ini
 .directory
+.DS_Store
+._*
 *.cache
-*.old
+*.crt
 *.log
+*.old
+*.key
+*.pem
 *.tmp
 *.zip
-._
 *~
 
 # Development files
 # --------------------------
 .php-version
+.tool-versions
 coveralls-upload.json
 
 # Dependency folders
