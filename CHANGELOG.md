@@ -1,6 +1,14 @@
 # Changelog
 
-All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
+
+## [0.5.0](https://github.com/projek-xyz/template/compare/v0.4.0...v0.5.0) (2026-05-13)
+
+
+### Features
+
+* **dev:** init `lint-staged` and `simple-git-hooks` ([#56](https://github.com/projek-xyz/template/issues/56)) ([7a2b3a7](https://github.com/projek-xyz/template/commit/7a2b3a71ab78e65b312ede2fccfe19721ef3e964))
+* switch back to `projek-xyz/actions` workflows ([#36](https://github.com/projek-xyz/template/issues/36)) ([bdb0b57](https://github.com/projek-xyz/template/commit/bdb0b574599d933ec159bfe19a8082eec1127728)), closes [projek-xyz/actions#1](https://github.com/projek-xyz/actions/issues/1)
 
 ## [0.4.0](https://github.com/projek-xyz/template/compare/v0.3.0...v0.4.0) (2024-10-04)
 
