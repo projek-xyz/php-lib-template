@@ -20,8 +20,9 @@
         }
     ],
     "scripts": {
-        "spec": "kahlan --config=tests/config.php",
+        "format": "phpcbf --standard=PSR12",
         "lint": "phpcs --standard=PSR12 -n -p src",
+        "spec": "kahlan --config=tests/config.php",
         "test": [
             "@lint",
             "@spec"
