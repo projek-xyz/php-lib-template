@@ -10,7 +10,7 @@
     "devDependencies": {
         "@commitlint/cli": "^21.0.1",
         "@commitlint/config-conventional": "^21.0.1",
-        "commit-and-tag-version": "^12.7.1"
+        "commit-and-tag-version": "^12.7.3"
     },
     "commitlint": {
         "extends": [
