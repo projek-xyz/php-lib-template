@@ -5,17 +5,29 @@
     "author": "Fery Wardiyanto <ferywardiyanto@gmail.com>",
     "repository": "github:projek-xyz/template",
     "scripts": {
+        "postinstall": "if [ -z \"$CI\" ]; then simple-git-hooks; fi",
         "release": "commit-and-tag-version -s"
     },
     "devDependencies": {
         "@commitlint/cli": "^21.0.1",
         "@commitlint/config-conventional": "^21.0.1",
-        "commit-and-tag-version": "^12.7.3"
+        "commit-and-tag-version": "^12.7.3",
+        "lint-staged": "^17.0.4",
+        "simple-git-hooks": "^2.13.1"
     },
     "commitlint": {
         "extends": [
             "@commitlint/config-conventional"
         ]
     },
-    "commit-and-tag-version": {}
+    "commit-and-tag-version": {},
+    "simple-git-hooks": {
+        "commit-msg": "npx commitlint --edit $1",
+        "pre-commit": "npx lint-staged --allow-empty"
+    },
+    "lint-staged": {
+        "*.php": [
+            "sh -c 'composer format -- \"$@\"; [ \"$?\" -eq 0 ] || [ \"$?\" -eq 1 ]' --"
+        ]
+    }
 }

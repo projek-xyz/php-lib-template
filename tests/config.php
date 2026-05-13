@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @link https://kahlan.github.io/docs/config-file.html
  */
@@ -30,7 +31,7 @@ Filters::apply($this, 'reporting', function ($next) {
     return $next();
 });
 
-Filters::apply($this, 'run', function($next) {
+Filters::apply($this, 'run', function ($next) {
     /** @var \Kahlan\Scope $scope */
     $scope = $this->suite()->root()->scope(); // The top most describe scope.
 
