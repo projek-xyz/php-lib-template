@@ -27,7 +27,7 @@
     },
     "lint-staged": {
         "*.php": [
-            "sh -c 'composer format -- \"$@\"; [ \"$?\" -eq 0 ] || [ \"$?\" -eq 1 ]' --"
+            "sh -c 'composer format -- \"$@\"; rc=$?; [ \"$rc\" -eq 0 ] || [ \"$rc\" -eq 1 ]' --"
         ]
     }
 }
