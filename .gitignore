@@ -21,15 +21,13 @@ dist
 
 # Development files
 # --------------------------
-.php-version
-.tool-versions
 .env.*
 .env
-coveralls-upload.json
-
-# Dependency folders
+.php-version
+.tool-versions
 node_modules
 vendor
+coveralls-upload.json
 
 # Other package managers
 bun.lock
@@ -38,10 +36,13 @@ package-lock.json
 pnpm-lock.yaml
 yarn.lock
 
-# AI Agent
-GEMINI.md
+# AI Agents
+# --------------------------
+.agents
+.antigravitycli
 .gemini
 conductor
+GEMINI.md
 
 # IDE Project Configurations
 # --------------------------
