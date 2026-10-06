@@ -371,7 +371,7 @@ function walkTemplateFiles(string $root, callable $visitor): void
         $skip = $path === __FILE__;
 
         foreach ($skipped as $directory) {
-            if (\strpos('/' . $relative . '/', $directory) !== false) {
+            if (\str_contains('/' . $relative . '/', $directory)) {
                 $skip = true;
                 break;
             }
@@ -383,7 +383,7 @@ function walkTemplateFiles(string $root, callable $visitor): void
 
         $content = \file_get_contents($path);
 
-        if ($content === false || \strpos(\substr($content, 0, 8192), "\0") !== false) {
+        if ($content === false || \str_contains(\substr($content, 0, 8192), "\0")) {
             continue;
         }
 
@@ -412,7 +412,7 @@ function rewriteTemplateReferences(string $root, string $target): array
         $patterns,
         &$changed
     ): void {
-        if (\strpos($content, 'projek-xyz/') === false) {
+        if (! \str_contains($content, 'projek-xyz/')) {
             return;
         }
 
@@ -603,7 +603,7 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
 
     $packageJson = \file_get_contents($root . '/package.json');
 
-    if ($packageJson === false || \strpos($packageJson, '"version": "0.0.0"') === false) {
+    if ($packageJson === false || ! \str_contains($packageJson, '"version": "0.0.0"')) {
         $failures[] = 'package.json version is not 0.0.0';
     }
 
@@ -641,7 +641,7 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
             &$failures,
             $patterns
         ): void {
-            if (\strpos($content, $patterns[0]) !== false || \strpos($content, $patterns[1]) !== false) {
+            if (\str_contains($content, $patterns[0]) || \str_contains($content, $patterns[1])) {
                 $failures[] = 'residual template reference in ' . $relative;
             }
         });

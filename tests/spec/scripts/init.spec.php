@@ -48,7 +48,7 @@ $makeFixture = function (): string {
         "source": "https://github.com/projek-xyz/php-lib-template"
     },
     "require": {
-        "php": ">=7.2"
+        "php": ">=8.0"
     }
 }
 JSON,
