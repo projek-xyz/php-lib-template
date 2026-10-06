@@ -28,5 +28,5 @@ updates:
       timezone: Asia/Jakarta
     versioning-strategy: increase-if-necessary
     groups:
-      commitlint:
-        patterns: ['@commitlint/*']
+      dependencies:
+        patterns: ['*']
