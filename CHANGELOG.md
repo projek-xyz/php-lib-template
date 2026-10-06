@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.6.1](https://github.com/projek-xyz/template/compare/v0.6.0...v0.6.1) (2026-10-06)
+
+### Features
+
+* **init:** bootstrap `composer create-project` via shared init script ([#64](https://github.com/projek-xyz/template/issues/64)) ([2bac2be](https://github.com/projek-xyz/template/commit/2bac2be98f86962969973711290828a3bc373e25))
+
 ## [0.6.0](https://github.com/projek-xyz/template/compare/v0.5.0...v0.6.0) (2026-10-06)
 
 ### Features
