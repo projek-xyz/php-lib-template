@@ -28,7 +28,7 @@ jobs:
 
     env:
       GIT_COMMIT_SHA: ${{ github.sha }}
-      GIT_BRANCH: ${{ needs.prepare.outputs.project-branch-name }}
+      GIT_BRANCH: ${{ needs.prepare.outputs.branch-name }}
 
     strategy:
       fail-fast: false
@@ -55,7 +55,7 @@ jobs:
           restore-keys: composer-php${{ matrix.php }}-
 
       - name: Install dependencies
-        run: composer update --prefer-dist --no-progress --no-suggest
+        run: composer update --ansi --prefer-dist --no-progress --no-suggest
 
       - name: Run tests
         run: composer test
