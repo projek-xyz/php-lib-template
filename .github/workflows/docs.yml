@@ -2,7 +2,7 @@ name: Docs
 
 on:
   push:
-    branches: [fix/wiki]
+    branches: [main]
     paths:
       - .github/workflows/docs.yml
       - .github/wiki/*
@@ -28,11 +28,8 @@ jobs:
         with:
           repository: ${{ github.repository }}.wiki
           path: wiki
-          # persist-credentials: false
 
       - name: Publish Wiki
-        # env:
-        #   REPO: https://${{ github.token }}@github.com/${{ github.repository }}.wiki.git
         run: |
           set -e
           cd ${{ github.workspace }}/wiki
