@@ -1,4 +1,5 @@
 name: Publish
+run-name: "publish(${{ github.ref_name }}): release and wiki from `${{ github.sha }}`"
 
 on:
   push:
@@ -36,11 +37,13 @@ jobs:
       - name: Publish Wiki
         run: |
           set -e
+          SHORT_SHA=${GITHUB_SHA:0:7}
+
           cd ${{ github.workspace }}/wiki
           cp -a ${{ github.workspace }}/repo/.github/wiki/* .
 
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "${{ vars.CI_BOT_USERNAME }}"
+          git config --global user.email "${{ vars.CI_BOT_EMAIL }}"
 
           git add -A
-          git diff-index --quiet HEAD || git commit -m "docs(wiki): wiki sync" && git push
+          git diff-index --quiet HEAD || git commit -m "docs(wiki): wiki sync with ${SHORT_SHA}" && git push
