@@ -2,7 +2,7 @@ name: Docs
 
 on:
   push:
-    branches: [main]
+    branches: [fix/wiki]
     paths:
       - .github/workflows/docs.yml
       - .github/wiki/*
@@ -12,6 +12,9 @@ jobs:
     name: Publish Wiki
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -20,8 +23,9 @@ jobs:
 
       - name: Publish Wiki
         env:
-          REPO: https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git
+          REPO: https://${{ github.token }}@github.com/${{ github.repository }}.wiki.git
         run: |
-          git config user.name ${{ github.actor }}
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git subtree split -P .github/wiki -b gh-wiki
           git push -f $REPO gh-wiki:master
