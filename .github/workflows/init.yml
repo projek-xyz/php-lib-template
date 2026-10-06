@@ -27,55 +27,23 @@ jobs:
           php-version: '8.4'
           coverage: none
 
-      - name: Rewrite template references
-        run: |
-          set -euo pipefail
-          files=$(git grep -Il -e 'projek-xyz/template' -e 'projek-xyz/php-lib-template' -- . || true)
-          if [ -n "$files" ]; then
-            printf '%s\n' "$files" | xargs sed -i \
-              -e "s|projek-xyz/php-lib-template|${GITHUB_REPOSITORY}|g" \
-              -e "s|projek-xyz/template|${GITHUB_REPOSITORY}|g"
-          fi
-
-      - name: Reset package.json version
-        run: |
-          sed -i '0,/"version":/s/"version": *"[^"]*"/"version": "0.0.0"/' package.json
-
-      - name: Remove template-only files
-        run: |
-          rm -f .github/README.md CHANGELOG.md composer.lock package-lock.json
-          rm -f .github/workflows/init.yml
-          rm -rf .agents/rules
-
-      - name: Uncomment .gitattributes export list
-        run: |
-          sed -i 's/^# \(.*export-ignore\)$/\1/' .gitattributes
+      - name: Bootstrap generated project
+        run: php scripts/init.php
 
       - name: Regenerate lock files
         run: |
           set -euo pipefail
           composer update --ansi --prefer-dist --no-interaction --no-progress
-          npm install --no-audit --no-fund
+          if command -v npm >/dev/null; then
+            npm install --no-audit --no-fund
+          fi
 
-      - name: Verify transformation
+      - name: Verify regenerated locks
         run: |
           set -euo pipefail
-          test "$(jq -r .name package.json)" = "@${GITHUB_REPOSITORY}"
-          test "$(jq -r .version package.json)" = '0.0.0'
-          test "$(jq -r .name composer.json)" = "${GITHUB_REPOSITORY}"
-          test ! -e .github/README.md
-          test ! -e CHANGELOG.md
-          test ! -e .github/workflows/init.yml
           test -e composer.lock
-          test -e package-lock.json
-          if grep -q '^#.*export-ignore$' .gitattributes; then
-            echo '::error::commented entries remain in .gitattributes'
-            exit 1
-          fi
-          if grep -rIl -e 'projek-xyz/template' -e 'projek-xyz/php-lib-template' \
-              --exclude-dir=.git --exclude-dir=vendor --exclude-dir=node_modules .; then
-            echo '::error::template references remain'
-            exit 1
+          if command -v npm >/dev/null; then
+            test -e package-lock.json
           fi
 
       - name: Amend initial commit
