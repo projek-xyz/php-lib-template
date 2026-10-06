@@ -20,8 +20,11 @@
         }
     ],
     "scripts": {
-        "format": "phpcbf --standard=PSR12",
-        "lint": "phpcs --standard=PSR12 -n -p src",
+        "post-create-project-cmd": [
+            "@php scripts/init.php"
+        ],
+        "format": "phpcbf --standard=PSR12 src scripts",
+        "lint": "phpcs --standard=PSR12 src scripts -p -n",
         "spec": "kahlan --config=tests/config.php",
         "test": [
             "@lint",
@@ -39,7 +42,7 @@
         }
     },
     "require": {
-        "php": ">=7.2"
+        "php": ">=8.0"
     },
     "require-dev": {
         "kahlan/kahlan": "^6.1",
