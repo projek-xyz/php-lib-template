@@ -671,6 +671,27 @@ describe('isCommandAvailable', function () {
 });
 
 describe('initializeGitRepository', function () {
+    $savedGitEnv = [];
+
+    beforeEach(function () use (&$savedGitEnv) {
+        $savedGitEnv = [
+            'GIT_AUTHOR_NAME' => getenv('GIT_AUTHOR_NAME'),
+            'GIT_AUTHOR_EMAIL' => getenv('GIT_AUTHOR_EMAIL'),
+            'GIT_COMMITTER_NAME' => getenv('GIT_COMMITTER_NAME'),
+            'GIT_COMMITTER_EMAIL' => getenv('GIT_COMMITTER_EMAIL'),
+        ];
+    });
+
+    afterEach(function () use (&$savedGitEnv) {
+        foreach ($savedGitEnv as $name => $value) {
+            if ($value === false) {
+                putenv($name);
+                continue;
+            }
+            putenv($name . '=' . $value);
+        }
+    });
+
     $removeFixture = function (string $root): void {
         exec('rm -rf ' . escapeshellarg($root));
     };
@@ -722,6 +743,20 @@ describe('initializeGitRepository', function () {
         $removeFixture($root);
     });
 
+    it('honors git identity provided through the environment', function () use ($makeRepo, $removeFixture, $withoutIdentity) {
+        $root = $makeRepo();
+        putenv('GIT_AUTHOR_NAME=Spec Bot');
+        putenv('GIT_AUTHOR_EMAIL=spec@example.com');
+        putenv('GIT_COMMITTER_NAME=Spec Bot');
+        putenv('GIT_COMMITTER_EMAIL=spec@example.com');
+
+        // config chain is neutralised, only the environment can supply identity
+        expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
+            ->toEqual('committed');
+
+        $removeFixture($root);
+    });
+
     it('keeps the repository initialized but skips the commit without identity', function () use ($makeRepo, $removeFixture, $withoutIdentity) {
         $root = $makeRepo();
 
@@ -759,6 +794,89 @@ describe('initializeGitRepository', function () {
 
         expect(is_dir($root . '/.git'))->toBe(false);
 
+        $removeFixture($root);
+    });
+});
+
+describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
+    $savedGitEnv = [];
+
+    beforeEach(function () use (&$savedGitEnv) {
+        $savedGitEnv = [
+            'GIT_AUTHOR_NAME' => getenv('GIT_AUTHOR_NAME'),
+            'GIT_AUTHOR_EMAIL' => getenv('GIT_AUTHOR_EMAIL'),
+            'GIT_COMMITTER_NAME' => getenv('GIT_COMMITTER_NAME'),
+            'GIT_COMMITTER_EMAIL' => getenv('GIT_COMMITTER_EMAIL'),
+        ];
+        putenv('GIT_AUTHOR_NAME=Spec Bot');
+        putenv('GIT_AUTHOR_EMAIL=spec@example.com');
+        putenv('GIT_COMMITTER_NAME=Spec Bot');
+        putenv('GIT_COMMITTER_EMAIL=spec@example.com');
+    });
+
+    afterEach(function () use (&$savedGitEnv) {
+        foreach ($savedGitEnv as $name => $value) {
+            if ($value === false) {
+                putenv($name);
+                continue;
+            }
+            putenv($name . '=' . $value);
+        }
+    });
+
+    it('commits the bootstrapped state as the initial commit', function () use ($makeFixture, $removeFixture) {
+        $root = $makeFixture();
+        // the dist tree ships without git metadata
+        exec('rm -rf ' . escapeshellarg($root . '/.git'));
+
+        $in = fopen('php://memory', 'r+');
+        fwrite($in, "e2e/my-lib\ny\n");
+        rewind($in);
+        $out = fopen('php://memory', 'r+');
+
+        $code = bootstrapProject($root, $in, $out, true, ['GITHUB_REPOSITORY' => '']);
+
+        expect($code)->toEqual(0);
+        expect(is_dir($root . '/.git'))->toBe(true);
+
+        [$logCode, $message] = runCommand('git -C ' . escapeshellarg($root) . ' log -1 --format=%s');
+        expect($logCode)->toEqual(0);
+        expect($message)->toEqual('chore: initial commit :fire:');
+
+        [, $committedComposer] = runCommand('git -C ' . escapeshellarg($root) . ' show HEAD:composer.json');
+        expect($committedComposer)->toContain('"name": "e2e/my-lib"');
+        expect($committedComposer)->not->toContain('post-create-project-cmd');
+
+        [, $committedTree] = runCommand(
+            'git -C ' . escapeshellarg($root) . ' show --pretty=format: --name-only HEAD'
+        );
+        expect($committedTree)->not->toContain('CHANGELOG.md');
+
+        [, $worktree] = runCommand('git -C ' . escapeshellarg($root) . ' status --porcelain');
+        expect($worktree)->toEqual('');
+
+        fclose($in);
+        fclose($out);
+        $removeFixture($root);
+    });
+
+    it('skips all interaction when not attached to a terminal', function () use ($makeFixture, $removeFixture) {
+        $root = $makeFixture();
+        exec('rm -rf ' . escapeshellarg($root . '/.git'));
+
+        $in = fopen('php://memory', 'r+');
+        $out = fopen('php://memory', 'r+');
+
+        $code = bootstrapProject($root, $in, $out, false, ['GITHUB_REPOSITORY' => '']);
+
+        expect($code)->toEqual(0);
+        expect(is_dir($root . '/.git'))->toBe(false);
+
+        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        expect($data['name'])->toEqual('projek-xyz/template');
+
+        fclose($in);
+        fclose($out);
         $removeFixture($root);
     });
 });

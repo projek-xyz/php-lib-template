@@ -213,16 +213,22 @@ function initializeGitRepository(string $root, string $message, ?array $override
 
     runCommand($prefix . ' add -A', $overrides);
 
-    $name = $overrides['GIT_AUTHOR_NAME'] ?? '';
+    $envName = $overrides['GIT_AUTHOR_NAME'] ?? getenv('GIT_AUTHOR_NAME');
+    $name = '';
 
-    if ($name === '') {
+    if (is_string($envName) && $envName !== '') {
+        $name = $envName;
+    } else {
         [$configCode, $configName] = runCommand($prefix . ' config user.name', $overrides);
         $name = $configCode === 0 ? $configName : '';
     }
 
-    $email = $overrides['GIT_AUTHOR_EMAIL'] ?? '';
+    $envEmail = $overrides['GIT_AUTHOR_EMAIL'] ?? getenv('GIT_AUTHOR_EMAIL');
+    $email = '';
 
-    if ($email === '') {
+    if (is_string($envEmail) && $envEmail !== '') {
+        $email = $envEmail;
+    } else {
         [$configCode, $configEmail] = runCommand($prefix . ' config user.email', $overrides);
         $email = $configCode === 0 ? $configEmail : '';
     }
@@ -237,39 +243,32 @@ function initializeGitRepository(string $root, string $message, ?array $override
 }
 
 /**
- * Orchestrates one bootstrap run.
+ * Bootstraps a generated project tree.
  *
- * Github mode (GITHUB_REPOSITORY set) transforms non-interactively;
- * the composer path prompts on a terminal and otherwise only cleans up.
+ * Interacts only when $interactive is true and github mode is off, then
+ * transforms, verifies, strips the bootstrap itself, and finally
+ * initializes git when requested — so the single initial commit contains
+ * the bootstrapped state rather than the template state.
  */
-function main(): int
+function bootstrapProject(string $root, $stdin, $stdout, bool $interactive, array $env): int
 {
-    $root = dirname(__DIR__);
-    $target = getenv('GITHUB_REPOSITORY');
-    $githubMode = $target !== false && $target !== '';
+    $target = $env['GITHUB_REPOSITORY'] ?? null;
+    $githubMode = is_string($target) && $target !== '';
+    $initGit = false;
 
     if (! $githubMode) {
         $target = null;
 
-        if (stream_isatty(STDIN)) {
+        if ($interactive) {
             $default = defaultPackageName(basename($root), templateUsername());
-            $target = promptPackageName(STDIN, STDOUT, $default);
-            echo PHP_EOL;
+            $target = promptPackageName($stdin, $stdout, $default);
+            fwrite($stdout, PHP_EOL);
 
-            if ($target !== null && promptGitInit(STDIN, STDOUT, $target)) {
-                $messages = [
-                    'committed' => 'git: initial commit created',
-                    'no-identity' => 'git: identity not configured, skipping commit',
-                    'git-not-found' => 'git: not found, skipping',
-                    'already-git' => 'git: repository already exists, skipping',
-                    'init-failed' => 'git: init failed',
-                    'commit-failed' => 'git: commit failed',
-                ];
-                $status = initializeGitRepository($root, GIT_INITIAL_COMMIT);
-                echo ($messages[$status] ?? 'git: ' . $status) . PHP_EOL;
+            if ($target !== null) {
+                $initGit = promptGitInit($stdin, $stdout, $target);
             }
 
-            echo PHP_EOL;
+            fwrite($stdout, PHP_EOL);
         }
     }
 
@@ -286,30 +285,57 @@ function main(): int
     uncommentExportIgnoreList($root);
 
     foreach ($removed as $file) {
-        echo 'removed ' . $file . PHP_EOL;
+        fwrite($stdout, 'removed ' . $file . PHP_EOL);
     }
 
     $failures = verifyTransformation($root, $target, $githubMode);
 
     if ($failures !== []) {
         foreach ($failures as $failure) {
-            echo 'FAIL: ' . $failure . PHP_EOL;
+            fwrite($stdout, 'FAIL: ' . $failure . PHP_EOL);
         }
 
         return 1;
     }
 
-    echo 'verified' . PHP_EOL;
+    fwrite($stdout, 'verified' . PHP_EOL);
 
     removeSelfFromComposerJson($root);
-    unlink(__FILE__);
+    removePath($root . '/scripts/init.php');
     @rmdir($root . '/scripts');
+
+    if ($initGit) {
+        $messages = [
+            'committed' => 'git: initial commit created',
+            'no-identity' => 'git: identity not configured, skipping commit',
+            'git-not-found' => 'git: not found, skipping',
+            'already-git' => 'git: repository already exists, skipping',
+            'init-failed' => 'git: init failed',
+            'commit-failed' => 'git: commit failed',
+        ];
+        $status = initializeGitRepository($root, GIT_INITIAL_COMMIT);
+        fwrite($stdout, ($messages[$status] ?? 'git: ' . $status) . PHP_EOL);
+    }
 
     return 0;
 }
 
-if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
-    exit(main());
+/**
+ * Entry point when the script is executed directly.
+ *
+ * composer forks script hooks onto a real terminal only while it is
+ * interactive (EventDispatcher::executeTty); with --no-interaction it
+ * runs them on a pipe, so stream_isatty() mirrors composer's own mode.
+ */
+function main(): int
+{
+    return bootstrapProject(
+        dirname(__DIR__),
+        STDIN,
+        STDOUT,
+        stream_isatty(STDIN),
+        (array) getenv()
+    );
 }
 
 /**
@@ -672,4 +698,8 @@ function removeSelfFromComposerJson(string $root): bool
     file_put_contents($path, $encoded . "\n");
 
     return true;
+}
+
+if (realpath($_SERVER['SCRIPT_FILENAME'] ?? '') === __FILE__) {
+    exit(main());
 }
