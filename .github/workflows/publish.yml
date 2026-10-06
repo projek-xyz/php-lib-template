@@ -1,0 +1,46 @@
+name: Publish
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+jobs:
+  release:
+    name: Release
+    uses: projek-xyz/actions/.github/workflows/release.yml@ce09c15535a70b0573111c6c589114ff97c0c7cf
+
+    permissions:
+      contents: write
+
+  wiki:
+    name: Wiki
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}
+          path: repo
+          persist-credentials: false
+
+      - name: Checkout wiki
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+
+      - name: Publish Wiki
+        run: |
+          set -e
+          cd ${{ github.workspace }}/wiki
+          cp -a ${{ github.workspace }}/repo/.github/wiki/* .
+
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "docs(wiki): wiki sync" && git push
