@@ -16,16 +16,30 @@ jobs:
       contents: write
 
     steps:
-      - name: Checkout
+      - name: Checkout repo
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          repository: ${{ github.repository }}
+          path: repo
           persist-credentials: false
 
+      - name: Checkout wiki
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: ${{ github.repository }}.wiki
+          path: wiki
+          # persist-credentials: false
+
       - name: Publish Wiki
-        env:
-          REPO: https://${{ github.token }}@github.com/${{ github.repository }}.wiki.git
+        # env:
+        #   REPO: https://${{ github.token }}@github.com/${{ github.repository }}.wiki.git
         run: |
+          set -e
+          cd ${{ github.workspace }}/wiki
+          cp -a ${{ github.workspace }}/repo/.github/wiki/* .
+
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git subtree split -P .github/wiki -b gh-wiki
-          git push -f $REPO gh-wiki:master
+
+          git add -A
+          git diff-index --quiet HEAD || git commit -m "docs(wiki): wiki sync" && git push
