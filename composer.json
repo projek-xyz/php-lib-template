@@ -23,8 +23,8 @@
         "post-create-project-cmd": [
             "@php scripts/init.php"
         ],
-        "format": "phpcbf --standard=PSR12",
-        "lint": "phpcs --standard=PSR12 -n -p src scripts",
+        "format": "phpcbf --standard=PSR12 src scripts",
+        "lint": "phpcs --standard=PSR12 src scripts -p -n",
         "spec": "kahlan --config=tests/config.php",
         "test": [
             "@lint",

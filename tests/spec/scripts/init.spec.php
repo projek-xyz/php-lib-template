@@ -25,7 +25,8 @@ $makeFixture = function (): string {
         "post-create-project-cmd": [
             "@php scripts/init.php"
         ],
-        "format": "phpcbf --standard=PSR12",
+        "format": "phpcbf --standard=PSR12 src scripts",
+        "lint": "phpcs --standard=PSR12 src scripts -p -n",
         "spec": "kahlan --config=tests/config.php"
     },
     "support": {
@@ -336,6 +337,10 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
 
     beforeEach(function () use (&$root, $makeFixture) {
         $root = $makeFixture();
+
+        // the spec that requires scripts/init.php must never outlive it
+        mkdir($root . '/tests/spec/scripts', 0777, true);
+        file_put_contents($root . '/tests/spec/scripts/init.spec.php', '<?php // template infra');
     });
 
     afterEach(function () use (&$root, $removeFixture) {
@@ -352,6 +357,7 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
         expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
         expect(file_exists($root . '/composer.lock'))->toBe(false);
         expect(file_exists($root . '/package-lock.json'))->toBe(false);
+        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
 
         // The instantiation gate must survive.
         expect(file_exists($root . '/.github/workflows/tests.yml'))->toBe(true);
@@ -364,6 +370,7 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
         expect(file_exists($root . '/package-lock.json'))->toBe(true);
         expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
         expect(file_exists($root . '/.github/README.md'))->toBe(false);
+        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
     });
 
     it('keeps locks whose regenerating tool is unavailable', function () use (&$root) {
@@ -384,6 +391,7 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
             'CHANGELOG.md',
             'composer.lock',
             'package-lock.json',
+            'tests/spec/scripts',
         ]);
     });
 });
@@ -539,6 +547,16 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
         expect($data['scripts'])->toContainKey('format');
         expect($data['scripts'])->toContainKey('spec');
+    });
+
+    it('rewrites format and lint so they no longer point at the removed scripts dir', function () use (&$root) {
+        removeSelfFromComposerJson($root);
+
+        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+
+        // phpcs/phpcbf exit non-zero on a missing path, which would fail composer test
+        expect($data['scripts']['format'])->toEqual('phpcbf --standard=PSR12 src');
+        expect($data['scripts']['lint'])->toEqual('phpcs --standard=PSR12 src -p -n');
     });
 
     it('writes composer-style pretty json with unescaped slashes', function () use (&$root) {
@@ -864,6 +882,9 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
         $root = $makeFixture();
         exec('rm -rf ' . escapeshellarg($root . '/.git'));
 
+        mkdir($root . '/tests/spec/scripts', 0777, true);
+        file_put_contents($root . '/tests/spec/scripts/init.spec.php', '<?php // template infra');
+
         $in = fopen('php://memory', 'r+');
         $out = fopen('php://memory', 'r+');
 
@@ -871,6 +892,7 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
 
         expect($code)->toEqual(0);
         expect(is_dir($root . '/.git'))->toBe(false);
+        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
 
         $data = json_decode(file_get_contents($root . '/composer.json'), true);
         expect($data['name'])->toEqual('projek-xyz/template');

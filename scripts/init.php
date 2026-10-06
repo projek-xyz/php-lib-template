@@ -509,6 +509,8 @@ function removeTemplateOnlyFiles(string $root, bool $githubMode, array $capabili
         '.github/workflows/init.yml',
         '.agents/rules',
         'CHANGELOG.md',
+        // the spec mirrors scripts/, which self-deletes: never ship it alone
+        'tests/spec/scripts',
     ];
 
     if ($githubMode) {
@@ -684,6 +686,13 @@ function removeSelfFromComposerJson(string $root): bool
     }
 
     unset($data['scripts']['post-create-project-cmd']);
+
+    // scripts/ is about to self-delete; phpcs/phpcbf exit non-zero on missing paths
+    foreach (['format', 'lint'] as $name) {
+        if (isset($data['scripts'][$name]) && is_string($data['scripts'][$name])) {
+            $data['scripts'][$name] = preg_replace('/\sscripts(?=\s|$)/', '', $data['scripts'][$name], 1);
+        }
+    }
 
     if ($data['scripts'] === []) {
         unset($data['scripts']);
