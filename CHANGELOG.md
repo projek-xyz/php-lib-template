@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.6.0](https://github.com/projek-xyz/template/compare/v0.5.0...v0.6.0) (2026-10-06)
+
+### Features
+
+* **ci:** bootstrap generated repos with one-shot init workflow ([#63](https://github.com/projek-xyz/template/issues/63)) ([2c91258](https://github.com/projek-xyz/template/commit/2c912587ada7a041c3185ed834c3a8933525a199))
+* **ci:** init usage of `projek-xyz/actions/prepare` workflow ([1220053](https://github.com/projek-xyz/template/commit/1220053d489fee4f69e50196fe79774d9fa26237))
+
+### Bug Fixes
+
+* **wiki:** fix publishing issue and its stale contents ([#61](https://github.com/projek-xyz/template/issues/61)) ([cff5543](https://github.com/projek-xyz/template/commit/cff554389a509fe0c45714411f369f366448567f))
+
 ## [0.5.0](https://github.com/projek-xyz/template/compare/v0.4.0...v0.5.0) (2026-05-13)
 
 
