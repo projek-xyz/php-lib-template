@@ -11,7 +11,6 @@
 declare(strict_types=1);
 
 /** Yellow foreground escape for highlighted input. */
-
 const ANSI_YELLOW = "\033[33m";
 
 /** Restore the default foreground color. */
@@ -33,9 +32,9 @@ function defaultPackageName(string $dirName, ?string $username): string
 
     $package = strtolower($username . '/' . $dirName);
     $package = preg_replace('/[^a-z0-9\/_.-]+/', '-', $package);
-    $package = preg_replace('/-+/', '-', $package);
+    $package = preg_replace('/-+/', '-', $package ?: '');
 
-    return trim($package, '-');
+    return trim($package ?: '', '-');
 }
 
 /**
@@ -449,7 +448,7 @@ function resetPackageVersions(string $root): void
 
         $content = preg_replace('/("version":\s*")[^"]*(")/', '${1}0.0.0${2}', $content, 1);
 
-        if ($file === 'package-lock.json') {
+        if ($file === 'package-lock.json' && $content) {
             $content = preg_replace(
                 '/("packages":\s*\{\s*"":\s*\{[^}]*?"version":\s*")[^"]*(")/',
                 '${1}0.0.0${2}',
