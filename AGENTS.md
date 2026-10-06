@@ -46,7 +46,7 @@ vendor/               # Composer dependencies
 - **Commit messages must be Conventional Commits** (`feat:`, `fix:`, `chore:`, ...) — enforced by the `commit-msg` hook (commitlint); non-conforming messages are rejected. Skip hooks with `--no-verify` flag.
 - `pre-commit` runs lint-staged, which rewrites staged `*.php` through `composer format`, (phpcbf errors never block the commit)
 - Hooks are installed by the `prepare` script on `npm install` (`simple-git-hooks`); `opencode.json`/`.opencode`/`.ai` are gitignored
-- Release: `npm run release` (commit-and-tag-version); pushing a `v*.*.*` tag triggers the release workflow
+- Release: `npm run release` (commit-and-tag-version); pushing a `v*.*.*` tag triggers the `publish` workflow (release + wiki sync)
 
 ## Conventions to Note
 
@@ -55,5 +55,5 @@ vendor/               # Composer dependencies
 - Classes and functions must be explicitly qualified: either a `use` import or a `\` prefix — never a bare call in a `strict_types` file (e.g. DO `use function sprintf;` + `sprintf();`, or `\sprintf();`; DON'T call `sprintf();` unqualified)
 - Documentation templates available in:
   - `docs/` is a Jekyll GitHub Pages site (remote theme `just-the-docs`)
-  - `.github/wiki/` is subtree-split to the GitHub wiki by `docs.yml` on push to `main`.
+  - `.github/wiki/` is synced to the GitHub wiki by the `wiki` job in `.github/workflows/publish.yml` when a `v*.*.*` tag is pushed.
 - Sample PHPMD config is available in `tests/phpmd.xml`;
