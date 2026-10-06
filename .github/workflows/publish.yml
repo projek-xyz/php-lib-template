@@ -1,15 +1,19 @@
-name: Docs
+name: Publish
 
 on:
   push:
-    branches: [main]
-    paths:
-      - .github/workflows/docs.yml
-      - .github/wiki/*
+    tags: ['v*.*.*']
 
 jobs:
+  release:
+    name: Release
+    uses: projek-xyz/actions/.github/workflows/release.yml@ce09c15535a70b0573111c6c589114ff97c0c7cf
+
+    permissions:
+      contents: write
+
   wiki:
-    name: Publish Wiki
+    name: Wiki
     runs-on: ubuntu-latest
 
     permissions:
