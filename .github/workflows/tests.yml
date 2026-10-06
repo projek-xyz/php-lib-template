@@ -13,6 +13,9 @@ on:
 jobs:
   prepare:
     name: Prepare
+    if: >-
+      github.event.created == false ||
+      github.event.before != '0000000000000000000000000000000000000000'
     uses: projek-xyz/actions/.github/workflows/prepare.yml@ce09c15535a70b0573111c6c589114ff97c0c7cf
     secrets:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}

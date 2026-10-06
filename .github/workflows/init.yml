@@ -1,0 +1,88 @@
+name: Init Repo
+run-name: "chore(${{ github.ref_name }}): init `${{ github.repository }}` repo"
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  init:
+    name: Initialize repository
+    if: >-
+      github.event.repository.is_template == false &&
+      (github.event.created == true ||
+      github.event.before == '0000000000000000000000000000000000000000')
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
+        with:
+          php-version: '8.4'
+          coverage: none
+
+      - name: Rewrite template references
+        run: |
+          set -euo pipefail
+          files=$(git grep -Il -e 'projek-xyz/template' -e 'projek-xyz/php-lib-template' -- . || true)
+          if [ -n "$files" ]; then
+            printf '%s\n' "$files" | xargs sed -i \
+              -e "s|projek-xyz/php-lib-template|${GITHUB_REPOSITORY}|g" \
+              -e "s|projek-xyz/template|${GITHUB_REPOSITORY}|g"
+          fi
+
+      - name: Reset package.json version
+        run: |
+          sed -i '0,/"version":/s/"version": *"[^"]*"/"version": "0.0.0"/' package.json
+
+      - name: Remove template-only files
+        run: |
+          rm -f .github/README.md CHANGELOG.md composer.lock package-lock.json
+          rm -f .github/workflows/init.yml
+          rm -rf .agents/rules
+
+      - name: Uncomment .gitattributes export list
+        run: |
+          sed -i 's/^# \(.*export-ignore\)$/\1/' .gitattributes
+
+      - name: Regenerate lock files
+        run: |
+          set -euo pipefail
+          composer update --ansi --prefer-dist --no-interaction --no-progress
+          npm install --no-audit --no-fund
+
+      - name: Verify transformation
+        run: |
+          set -euo pipefail
+          test "$(jq -r .name package.json)" = "@${GITHUB_REPOSITORY}"
+          test "$(jq -r .version package.json)" = '0.0.0'
+          test "$(jq -r .name composer.json)" = "${GITHUB_REPOSITORY}"
+          test ! -e .github/README.md
+          test ! -e CHANGELOG.md
+          test ! -e .github/workflows/init.yml
+          test -e composer.lock
+          test -e package-lock.json
+          if grep -q '^#.*export-ignore$' .gitattributes; then
+            echo '::error::commented entries remain in .gitattributes'
+            exit 1
+          fi
+          if grep -rIl -e 'projek-xyz/template' -e 'projek-xyz/php-lib-template' \
+              --exclude-dir=.git --exclude-dir=vendor --exclude-dir=node_modules .; then
+            echo '::error::template references remain'
+            exit 1
+          fi
+
+      - name: Amend initial commit
+        run: |
+          set -euo pipefail
+          git config user.name "${{ vars.CI_BOT_USERNAME || 'github-actions[bot]' }}"
+          git config user.email "${{ vars.CI_BOT_EMAIL || '41898282+github-actions[bot]@users.noreply.github.com' }}"
+          git add -A
+          git commit --amend --no-verify -m 'chore: initial commit :fire:'
+          git push --force-with-lease origin HEAD:main
