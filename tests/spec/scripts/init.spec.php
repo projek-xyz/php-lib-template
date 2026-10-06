@@ -2,7 +2,22 @@
 
 declare(strict_types=1);
 
-use function Kahlan\{describe, expect, it};
+use function Kahlan\{afterEach, beforeEach, describe, expect, it};
+use function Projek\bootstrapProject;
+use function Projek\defaultPackageName;
+use function Projek\initializeGitRepository;
+use function Projek\isCommandAvailable;
+use function Projek\promptGitInit;
+use function Projek\promptPackageName;
+use function Projek\removeSelfFromComposerJson;
+use function Projek\removeTemplateOnlyFiles;
+use function Projek\resolvePackageInput;
+use function Projek\resetPackageVersions;
+use function Projek\rewriteTemplateReferences;
+use function Projek\runCommand;
+use function Projek\templateUsername;
+use function Projek\uncommentExportIgnoreList;
+use function Projek\verifyTransformation;
 
 require_once dirname(__DIR__, 3) . '/scripts/init.php';
 
@@ -314,7 +329,7 @@ describe('resetPackageVersions', function () use ($makeFixture, $removeFixture) 
     it('resets both root versions in package-lock.json but keeps dependency versions', function () use (&$root) {
         resetPackageVersions($root);
 
-        $lock = file_get_contents($root . '/package-lock.json');
+        $lock = file_get_contents($root . '/package-lock.json') ?: '';
 
         expect(substr_count($lock, '"version": "0.0.0"'))->toEqual(2);
         expect($lock)->not->toContain('"version": "0.6.0"');
@@ -426,8 +441,8 @@ describe('uncommentExportIgnoreList', function () use ($makeFixture, $removeFixt
 
         expect($attributes)->toContain('# Enforce Unix newlines');
         expect($attributes)->toContain('* text=lf');
-        expect(substr_count($attributes, 'composer.lock      export-ignore'))->toEqual(1);
-        expect(substr_count($attributes, 'CHANGELOG.md       export-ignore'))->toEqual(1);
+        expect(substr_count($attributes ?: '', 'composer.lock      export-ignore'))->toEqual(1);
+        expect(substr_count($attributes ?: '', 'CHANGELOG.md       export-ignore'))->toEqual(1);
     });
 
     it('reports how many entries it activated', function () use (&$root) {
@@ -542,7 +557,7 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
     it('removes the bootstrap hook but keeps other scripts', function () use (&$root) {
         expect(removeSelfFromComposerJson($root))->toBe(true);
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
 
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
         expect($data['scripts'])->toContainKey('format');
@@ -552,7 +567,7 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
     it('rewrites format and lint so they no longer point at the removed scripts dir', function () use (&$root) {
         removeSelfFromComposerJson($root);
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
 
         // phpcs/phpcbf exit non-zero on a missing path, which would fail composer test
         expect($data['scripts']['format'])->toEqual('phpcbf --standard=PSR12 src');
@@ -564,8 +579,8 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
 
         $composer = file_get_contents($root . '/composer.json');
 
-        expect(substr($composer, 0, 14))->toEqual("{\n    \"name\": ");
-        expect(substr($composer, -2))->toEqual("}\n");
+        expect(substr($composer ?: '', 0, 14))->toEqual("{\n    \"name\": ");
+        expect(substr($composer ?: '', -2))->toEqual("}\n");
         expect($composer)->toContain('"https://github.com/projek-xyz/php-lib-template"');
     });
 
@@ -582,7 +597,7 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
 
         expect(removeSelfFromComposerJson($root))->toBe(true);
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
 
         expect($data)->not->toContainKey('scripts');
     });
@@ -591,9 +606,18 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
 describe('promptPackageName', function () {
     $ask = function (string $input): array {
         $in = fopen('php://memory', 'r+');
+
+        if (!$in) {
+            return [];
+        }
+
         fwrite($in, $input);
         rewind($in);
         $out = fopen('php://memory', 'r+');
+
+        if (!$out) {
+            return [];
+        }
 
         $package = promptPackageName($in, $out, 'fery/my-lib');
 
@@ -636,9 +660,18 @@ describe('promptPackageName', function () {
 describe('promptGitInit', function () {
     $ask = function (string $input): array {
         $in = fopen('php://memory', 'r+');
+
+        if (!$in) {
+            return [];
+        }
+
         fwrite($in, $input);
         rewind($in);
         $out = fopen('php://memory', 'r+');
+
+        if (!$out) {
+            return [];
+        }
 
         $init = promptGitInit($in, $out, 'fery/my-lib');
 
@@ -740,54 +773,63 @@ describe('initializeGitRepository', function () {
         ];
     };
 
-    it('initializes, stages, and commits when identity is available', function () use ($makeRepo, $removeFixture, $identity) {
-        $root = $makeRepo();
+    it(
+        'initializes, stages, and commits when identity is available',
+        function () use ($makeRepo, $removeFixture, $identity) {
+            $root = $makeRepo();
 
-        expect(initializeGitRepository($root, 'chore: initial commit :fire:', $identity))
-            ->toEqual('committed');
+            expect(initializeGitRepository($root, 'chore: initial commit :fire:', $identity))
+                ->toEqual('committed');
 
-        expect(is_dir($root . '/.git'))->toBe(true);
+            expect(is_dir($root . '/.git'))->toBe(true);
 
-        [$code, $output] = runCommand('git -C ' . escapeshellarg($root) . ' log -1 --format=%s');
-        expect($code)->toEqual(0);
-        expect($output)->toEqual('chore: initial commit :fire:');
+            [$code, $output] = runCommand('git -C ' . escapeshellarg($root) . ' log -1 --format=%s');
+            expect($code)->toEqual(0);
+            expect($output)->toEqual('chore: initial commit :fire:');
 
-        [$code, $tracked] = runCommand('git -C ' . escapeshellarg($root) . ' ls-files');
-        expect($tracked)->toContain('src/hello.txt');
+            [$code, $tracked] = runCommand('git -C ' . escapeshellarg($root) . ' ls-files');
+            expect($tracked)->toContain('src/hello.txt');
 
-        [$code, $status] = runCommand('git -C ' . escapeshellarg($root) . ' status --porcelain');
-        expect($status)->toEqual('');
+            [$code, $status] = runCommand('git -C ' . escapeshellarg($root) . ' status --porcelain');
+            expect($status)->toEqual('');
 
-        $removeFixture($root);
-    });
+            $removeFixture($root);
+        }
+    );
 
-    it('honors git identity provided through the environment', function () use ($makeRepo, $removeFixture, $withoutIdentity) {
-        $root = $makeRepo();
-        putenv('GIT_AUTHOR_NAME=Spec Bot');
-        putenv('GIT_AUTHOR_EMAIL=spec@example.com');
-        putenv('GIT_COMMITTER_NAME=Spec Bot');
-        putenv('GIT_COMMITTER_EMAIL=spec@example.com');
+    it(
+        'honors git identity provided through the environment',
+        function () use ($makeRepo, $removeFixture, $withoutIdentity) {
+            $root = $makeRepo();
+            putenv('GIT_AUTHOR_NAME=Spec Bot');
+            putenv('GIT_AUTHOR_EMAIL=spec@example.com');
+            putenv('GIT_COMMITTER_NAME=Spec Bot');
+            putenv('GIT_COMMITTER_EMAIL=spec@example.com');
 
-        // config chain is neutralised, only the environment can supply identity
-        expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
-            ->toEqual('committed');
+            // config chain is neutralised, only the environment can supply identity
+            expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
+                ->toEqual('committed');
 
-        $removeFixture($root);
-    });
+            $removeFixture($root);
+        }
+    );
 
-    it('keeps the repository initialized but skips the commit without identity', function () use ($makeRepo, $removeFixture, $withoutIdentity) {
-        $root = $makeRepo();
+    it(
+        'keeps the repository initialized but skips the commit without identity',
+        function () use ($makeRepo, $removeFixture, $withoutIdentity) {
+            $root = $makeRepo();
 
-        expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
-            ->toEqual('no-identity');
+            expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
+                ->toEqual('no-identity');
 
-        expect(is_dir($root . '/.git'))->toBe(true);
+            expect(is_dir($root . '/.git'))->toBe(true);
 
-        [$code] = runCommand('git -C ' . escapeshellarg($root) . ' log -1');
-        expect($code)->not->toEqual(0);
+            [$code] = runCommand('git -C ' . escapeshellarg($root) . ' log -1');
+            expect($code)->not->toEqual(0);
 
-        $removeFixture($root);
-    });
+            $removeFixture($root);
+        }
+    );
 
     it('leaves an existing repository alone', function () use ($makeRepo, $removeFixture) {
         $root = $makeRepo();
@@ -848,9 +890,18 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
         exec('rm -rf ' . escapeshellarg($root . '/.git'));
 
         $in = fopen('php://memory', 'r+');
+
+        if (!$in) {
+            return;
+        }
+
         fwrite($in, "e2e/my-lib\ny\n");
         rewind($in);
         $out = fopen('php://memory', 'r+');
+
+        if (!$out) {
+            return;
+        }
 
         $code = bootstrapProject($root, $in, $out, true, ['GITHUB_REPOSITORY' => '']);
 
@@ -888,13 +939,17 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
         $in = fopen('php://memory', 'r+');
         $out = fopen('php://memory', 'r+');
 
+        if (!$in || !$out) {
+            return;
+        }
+
         $code = bootstrapProject($root, $in, $out, false, ['GITHUB_REPOSITORY' => '']);
 
         expect($code)->toEqual(0);
         expect(is_dir($root . '/.git'))->toBe(false);
         expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('projek-xyz/template');
 
         fclose($in);
@@ -930,7 +985,7 @@ describe('main', function () use ($makeFixture, $removeFixture) {
         expect($output)->toContain('removed CHANGELOG.md');
         expect(verifyTransformation($root, 'fery/my-lib', true))->toEqual([]);
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('fery/my-lib');
         expect($data['scripts'])->toContainKey('format');
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
@@ -951,7 +1006,7 @@ describe('main', function () use ($makeFixture, $removeFixture) {
         expect($output)->not->toContain('Package name');
         expect($output)->not->toContain('removed composer.lock');
 
-        $data = json_decode(file_get_contents($root . '/composer.json'), true);
+        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('projek-xyz/template');
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
 
