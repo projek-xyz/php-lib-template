@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 /**
  * @link https://kahlan.github.io/docs/config-file.html
  */
@@ -24,7 +26,7 @@ Filters::apply($this, 'reporting', function ($next) {
     if ($lcov_file) {
         Exporter\Lcov::write([
             'collector' => $reporter,
-            'file'      => $lcov_file,
+            'file' => $lcov_file,
         ]);
     }
 
@@ -32,13 +34,13 @@ Filters::apply($this, 'reporting', function ($next) {
 });
 
 Filters::apply($this, 'run', function ($next) {
-    /** @var \Kahlan\Scope $scope */
+    /** @var Kahlan\Scope $scope */
     $scope = $this->suite()->root()->scope(); // The top most describe scope.
 
     $scope->stubsDir = function (string ...$paths) {
         array_unshift($paths, 'stubs');
 
-        return __DIR__ . DIRECTORY_SEPARATOR . implode(DIRECTORY_SEPARATOR, $paths);
+        return __DIR__.DIRECTORY_SEPARATOR.implode(DIRECTORY_SEPARATOR, $paths);
     };
 
     return $next();

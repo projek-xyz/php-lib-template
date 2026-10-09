@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
-use function Kahlan\{afterEach, beforeEach, describe, expect, it};
+use function Kahlan\afterEach;
+use function Kahlan\beforeEach;
+use function Kahlan\describe;
+use function Kahlan\expect;
+use function Kahlan\it;
 use function Projek\bootstrapProject;
 use function Projek\defaultPackageName;
 use function Projek\initializeGitRepository;
@@ -11,24 +15,24 @@ use function Projek\promptGitInit;
 use function Projek\promptPackageName;
 use function Projek\removeSelfFromComposerJson;
 use function Projek\removeTemplateOnlyFiles;
-use function Projek\resolvePackageInput;
 use function Projek\resetPackageVersions;
+use function Projek\resolvePackageInput;
 use function Projek\rewriteTemplateReferences;
 use function Projek\runCommand;
 use function Projek\templateUsername;
 use function Projek\uncommentExportIgnoreList;
 use function Projek\verifyTransformation;
 
-require_once dirname(__DIR__, 3) . '/scripts/init.php';
+require_once dirname(__DIR__, 3).'/scripts/init.php';
 
 /**
  * Builds a throwaway template tree mirroring the real repository shape.
  */
 $makeFixture = function (): string {
-    $root = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'init-spec-' . bin2hex(random_bytes(6));
+    $root = sys_get_temp_dir().DIRECTORY_SEPARATOR.'init-spec-'.bin2hex(random_bytes(6));
 
     foreach (['', '.github', '.github/workflows', '.agents/rules', 'src', 'vendor', 'node_modules', '.git'] as $dir) {
-        mkdir($root . DIRECTORY_SEPARATOR . $dir, 0777, true);
+        mkdir($root.DIRECTORY_SEPARATOR.$dir, 0777, true);
     }
 
     $files = [
@@ -40,8 +44,8 @@ $makeFixture = function (): string {
         "post-create-project-cmd": [
             "@php scripts/init.php"
         ],
-        "format": "phpcbf --standard=PSR12 src scripts",
-        "lint": "phpcs --standard=PSR12 src scripts -p -n",
+        "format": "pint",
+        "lint": "pint --test",
         "spec": "kahlan --config=tests/config.php"
     },
     "support": {
@@ -131,11 +135,11 @@ YML,
     ];
 
     foreach ($files as $path => $content) {
-        file_put_contents($root . DIRECTORY_SEPARATOR . $path, $content);
+        file_put_contents($root.DIRECTORY_SEPARATOR.$path, $content);
     }
 
     file_put_contents(
-        $root . DIRECTORY_SEPARATOR . 'logo.png',
+        $root.DIRECTORY_SEPARATOR.'logo.png',
         "\x89PNG\x00\x0D\x0A\x1A\x0Aprojek-xyz/template\x00\x00IEND"
     );
 
@@ -143,7 +147,7 @@ YML,
 };
 
 $removeFixture = function (string $root): void {
-    exec('rm -rf ' . escapeshellarg($root));
+    exec('rm -rf '.escapeshellarg($root));
 };
 
 describe('defaultPackageName', function () {
@@ -175,9 +179,10 @@ describe('templateUsername', function () {
         foreach ($saved as $name => $value) {
             if ($value === false) {
                 putenv($name);
+
                 continue;
             }
-            putenv($name . '=' . $value);
+            putenv($name.'='.$value);
         }
     });
 
@@ -227,7 +232,7 @@ describe('resolvePackageInput', function () {
     });
 
     it('accepts and lower-cases a valid package name', function () use ($default) {
-        expect(resolvePackageInput('  Fery/My-Lib' . "\n", $default))->toEqual(['fery/my-lib', null]);
+        expect(resolvePackageInput('  Fery/My-Lib'."\n", $default))->toEqual(['fery/my-lib', null]);
     });
 
     it('returns no package on end of input', function () use ($default) {
@@ -248,12 +253,13 @@ describe('rewriteTemplateReferences', function () use ($makeFixture, $removeFixt
     });
 
     it('replaces both template references across text files', function () use (&$root) {
+        /** @disregard */
         rewriteTemplateReferences($root, 'fery/my-lib');
 
-        $composer = file_get_contents($root . '/composer.json');
-        $package = file_get_contents($root . '/package.json');
-        $readme = file_get_contents($root . '/README.md');
-        $githubReadme = file_get_contents($root . '/.github/README.md');
+        $composer = file_get_contents($root.'/composer.json');
+        $package = file_get_contents($root.'/package.json');
+        $readme = file_get_contents($root.'/README.md');
+        $githubReadme = file_get_contents($root.'/.github/README.md');
 
         expect($composer)->toContain('"name": "fery/my-lib"');
         expect($composer)->toContain('https://github.com/fery/my-lib');
@@ -265,6 +271,7 @@ describe('rewriteTemplateReferences', function () use ($makeFixture, $removeFixt
     });
 
     it('reports every changed file relative to the root', function () use (&$root) {
+        /** @disregard */
         $changed = rewriteTemplateReferences($root, 'fery/my-lib');
 
         expect($changed)->toEqual([
@@ -278,29 +285,32 @@ describe('rewriteTemplateReferences', function () use ($makeFixture, $removeFixt
     });
 
     it('leaves ignored directories alone', function () use (&$root) {
+        /** @disregard */
         rewriteTemplateReferences($root, 'fery/my-lib');
 
-        expect(file_get_contents($root . '/vendor/autoload.php'))
+        expect(file_get_contents($root.'/vendor/autoload.php'))
             ->toContain('projek-xyz/template');
-        expect(file_get_contents($root . '/node_modules/.stub.js'))
+        expect(file_get_contents($root.'/node_modules/.stub.js'))
             ->toContain('projek-xyz/template');
-        expect(file_get_contents($root . '/.git/config'))
+        expect(file_get_contents($root.'/.git/config'))
             ->toContain('projek-xyz/php-lib-template');
     });
 
     it('leaves binary files alone', function () use (&$root) {
+        /** @disregard */
         rewriteTemplateReferences($root, 'fery/my-lib');
 
-        $logo = file_get_contents($root . '/logo.png');
+        $logo = file_get_contents($root.'/logo.png');
 
         expect($logo)->toEqual("\x89PNG\x00\x0D\x0A\x1A\x0Aprojek-xyz/template\x00\x00IEND");
     });
 
     it('leaves files without references untouched', function () use (&$root) {
+        /** @disregard */
         $changed = rewriteTemplateReferences($root, 'fery/my-lib');
 
         expect($changed)->not->toContain('src/FooBar.php');
-        expect(file_get_contents($root . '/src/FooBar.php'))
+        expect(file_get_contents($root.'/src/FooBar.php'))
             ->toEqual("<?php\n\nnamespace Projek;\n\nclass FooBar\n{\n}\n");
     });
 });
@@ -318,18 +328,20 @@ describe('resetPackageVersions', function () use ($makeFixture, $removeFixture) 
     });
 
     it('resets the root version in package.json', function () use (&$root) {
+        /** @disregard */
         resetPackageVersions($root);
 
-        $package = file_get_contents($root . '/package.json');
+        $package = file_get_contents($root.'/package.json');
 
         expect($package)->toContain('"version": "0.0.0"');
         expect($package)->not->toContain('0.6.0');
     });
 
     it('resets both root versions in package-lock.json but keeps dependency versions', function () use (&$root) {
+        /** @disregard */
         resetPackageVersions($root);
 
-        $lock = file_get_contents($root . '/package-lock.json') ?: '';
+        $lock = file_get_contents($root.'/package-lock.json') ?: '';
 
         expect(substr_count($lock, '"version": "0.0.0"'))->toEqual(2);
         expect($lock)->not->toContain('"version": "0.6.0"');
@@ -337,9 +349,10 @@ describe('resetPackageVersions', function () use ($makeFixture, $removeFixture) 
     });
 
     it('leaves composer.lock alone', function () use (&$root) {
+        /** @disregard */
         resetPackageVersions($root);
 
-        $composerLock = file_get_contents($root . '/composer.lock');
+        $composerLock = file_get_contents($root.'/composer.lock');
 
         expect($composerLock)->toContain('"version": "v6.4.0"');
         expect($composerLock)->not->toContain('0.0.0');
@@ -354,8 +367,8 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
         $root = $makeFixture();
 
         // the spec that requires scripts/init.php must never outlive it
-        mkdir($root . '/tests/spec/scripts', 0777, true);
-        file_put_contents($root . '/tests/spec/scripts/init.spec.php', '<?php // template infra');
+        mkdir($root.'/tests/spec/scripts', 0777, true);
+        file_put_contents($root.'/tests/spec/scripts/init.spec.php', '<?php // template infra');
     });
 
     afterEach(function () use (&$root, $removeFixture) {
@@ -364,39 +377,43 @@ describe('removeTemplateOnlyFiles', function () use ($makeFixture, $removeFixtur
     });
 
     it('removes template-only files including both locks in github mode', function () use (&$root, $bothCaps) {
+        /** @disregard */
         removeTemplateOnlyFiles($root, true, $bothCaps);
 
-        expect(file_exists($root . '/.github/README.md'))->toBe(false);
-        expect(file_exists($root . '/.github/workflows/init.yml'))->toBe(false);
-        expect(file_exists($root . '/.agents/rules'))->toBe(false);
-        expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
-        expect(file_exists($root . '/composer.lock'))->toBe(false);
-        expect(file_exists($root . '/package-lock.json'))->toBe(false);
-        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
+        expect(file_exists($root.'/.github/README.md'))->toBe(false);
+        expect(file_exists($root.'/.github/workflows/init.yml'))->toBe(false);
+        expect(file_exists($root.'/.agents/rules'))->toBe(false);
+        expect(file_exists($root.'/CHANGELOG.md'))->toBe(false);
+        expect(file_exists($root.'/composer.lock'))->toBe(false);
+        expect(file_exists($root.'/package-lock.json'))->toBe(false);
+        expect(file_exists($root.'/tests/spec/scripts/init.spec.php'))->toBe(false);
 
         // The instantiation gate must survive.
-        expect(file_exists($root . '/.github/workflows/tests.yml'))->toBe(true);
+        expect(file_exists($root.'/.github/workflows/tests.yml'))->toBe(true);
     });
 
     it('keeps both locks on the composer path', function () use (&$root, $bothCaps) {
+        /** @disregard */
         removeTemplateOnlyFiles($root, false, $bothCaps);
 
-        expect(file_exists($root . '/composer.lock'))->toBe(true);
-        expect(file_exists($root . '/package-lock.json'))->toBe(true);
-        expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
-        expect(file_exists($root . '/.github/README.md'))->toBe(false);
-        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
+        expect(file_exists($root.'/composer.lock'))->toBe(true);
+        expect(file_exists($root.'/package-lock.json'))->toBe(true);
+        expect(file_exists($root.'/CHANGELOG.md'))->toBe(false);
+        expect(file_exists($root.'/.github/README.md'))->toBe(false);
+        expect(file_exists($root.'/tests/spec/scripts/init.spec.php'))->toBe(false);
     });
 
     it('keeps locks whose regenerating tool is unavailable', function () use (&$root) {
+        /** @disregard */
         removeTemplateOnlyFiles($root, true, ['composer' => false, 'npm' => false]);
 
-        expect(file_exists($root . '/composer.lock'))->toBe(true);
-        expect(file_exists($root . '/package-lock.json'))->toBe(true);
-        expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
+        expect(file_exists($root.'/composer.lock'))->toBe(true);
+        expect(file_exists($root.'/package-lock.json'))->toBe(true);
+        expect(file_exists($root.'/CHANGELOG.md'))->toBe(false);
     });
 
     it('reports the removed files', function () use (&$root, $bothCaps) {
+        /** @disregard */
         $removed = removeTemplateOnlyFiles($root, true, $bothCaps);
 
         expect($removed)->toEqual([
@@ -424,9 +441,10 @@ describe('uncommentExportIgnoreList', function () use ($makeFixture, $removeFixt
     });
 
     it('activates commented export-ignore entries', function () use (&$root) {
+        /** @disregard */
         uncommentExportIgnoreList($root);
 
-        $attributes = file_get_contents($root . '/.gitattributes');
+        $attributes = file_get_contents($root.'/.gitattributes');
 
         expect($attributes)->toContain('.agents            export-ignore');
         expect($attributes)->toContain('.github            export-ignore');
@@ -435,9 +453,10 @@ describe('uncommentExportIgnoreList', function () use ($makeFixture, $removeFixt
     });
 
     it('leaves unrelated comments and active entries alone', function () use (&$root) {
+        /** @disregard */
         uncommentExportIgnoreList($root);
 
-        $attributes = file_get_contents($root . '/.gitattributes');
+        $attributes = file_get_contents($root.'/.gitattributes');
 
         expect($attributes)->toContain('# Enforce Unix newlines');
         expect($attributes)->toContain('* text=lf');
@@ -446,6 +465,7 @@ describe('uncommentExportIgnoreList', function () use ($makeFixture, $removeFixt
     });
 
     it('reports how many entries it activated', function () use (&$root) {
+        /** @disregard */
         expect(uncommentExportIgnoreList($root))->toEqual(2);
     });
 });
@@ -479,35 +499,40 @@ describe('verifyTransformation', function () use ($makeFixture, $removeFixture) 
     it('passes on a fully transformed tree', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', false);
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', false))->toEqual([]);
     });
 
     it('passes without a target when no name was chosen', function () use (&$root, $transform) {
         $transform($root, null, false);
 
+        /** @disregard */
         expect(verifyTransformation($root, null, false))->toEqual([]);
     });
 
     it('reports residual template references', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', true);
-        file_put_contents($root . '/README.md', "badge projek-xyz/template badge\n");
+        file_put_contents($root.'/README.md', "badge projek-xyz/template badge\n");
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', true))
             ->toContain('residual template reference in README.md');
     });
 
     it('reports unreset versions', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', true);
-        file_put_contents($root . '/package.json', "{\n    \"version\": \"0.6.0\"\n}\n");
+        file_put_contents($root.'/package.json', "{\n    \"version\": \"0.6.0\"\n}\n");
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', true))
             ->toContain('package.json version is not 0.0.0');
     });
 
     it('reports template files still present', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', true);
-        file_put_contents($root . '/CHANGELOG.md', "## [0.6.0]\n");
+        file_put_contents($root.'/CHANGELOG.md', "## [0.6.0]\n");
 
+        /** @disregard */
         $failures = verifyTransformation($root, 'fery/my-lib', true);
 
         expect($failures)->toContain('CHANGELOG.md still present');
@@ -516,6 +541,7 @@ describe('verifyTransformation', function () use ($makeFixture, $removeFixture) 
     it('reports a still-commented export-ignore list', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', true, ['uncomment']);
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', true))
             ->toContain('export-ignore entries still commented out');
     });
@@ -523,14 +549,16 @@ describe('verifyTransformation', function () use ($makeFixture, $removeFixture) 
     it('checks package names against the target', function () use (&$root, $transform) {
         $transform($root, 'other/lib', true);
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', true))
             ->toContain('composer.json name is not fery/my-lib');
     });
 
     it('requires fresh locks on the composer path', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', false);
-        unlink($root . '/composer.lock');
+        unlink($root.'/composer.lock');
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', false))
             ->toContain('composer.lock missing');
     });
@@ -538,6 +566,7 @@ describe('verifyTransformation', function () use ($makeFixture, $removeFixture) 
     it('does not require locks during github instantiation', function () use (&$root, $transform) {
         $transform($root, 'fery/my-lib', true);
 
+        /** @disregard */
         expect(verifyTransformation($root, 'fery/my-lib', true))->toEqual([]);
     });
 });
@@ -555,9 +584,10 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
     });
 
     it('removes the bootstrap hook but keeps other scripts', function () use (&$root) {
+        /** @disregard */
         expect(removeSelfFromComposerJson($root))->toBe(true);
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
 
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
         expect($data['scripts'])->toContainKey('format');
@@ -565,19 +595,20 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
     });
 
     it('rewrites format and lint so they no longer point at the removed scripts dir', function () use (&$root) {
+        /** @disregard */
         removeSelfFromComposerJson($root);
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
 
-        // phpcs/phpcbf exit non-zero on a missing path, which would fail composer test
-        expect($data['scripts']['format'])->toEqual('phpcbf --standard=PSR12 src');
-        expect($data['scripts']['lint'])->toEqual('phpcs --standard=PSR12 src -p -n');
+        expect($data['scripts']['format'])->toEqual('pint');
+        expect($data['scripts']['lint'])->toEqual('pint --test');
     });
 
     it('writes composer-style pretty json with unescaped slashes', function () use (&$root) {
+        /** @disregard */
         removeSelfFromComposerJson($root);
 
-        $composer = file_get_contents($root . '/composer.json');
+        $composer = file_get_contents($root.'/composer.json');
 
         expect(substr($composer ?: '', 0, 14))->toEqual("{\n    \"name\": ");
         expect(substr($composer ?: '', -2))->toEqual("}\n");
@@ -585,19 +616,22 @@ describe('removeSelfFromComposerJson', function () use ($makeFixture, $removeFix
     });
 
     it('is idempotent and reports a missing hook', function () use (&$root) {
+        /** @disregard */
         removeSelfFromComposerJson($root);
 
+        /** @disregard */
         expect(removeSelfFromComposerJson($root))->toBe(false);
     });
 
     it('drops the scripts section when the hook was its only entry', function () use (&$root) {
         $minimal = "{\n    \"name\": \"projek-xyz/template\",\n    \"scripts\": {\n"
-            . "        \"post-create-project-cmd\": [\n            \"@php scripts/init.php\"\n        ]\n    }\n}\n";
-        file_put_contents($root . '/composer.json', $minimal);
+            ."        \"post-create-project-cmd\": [\n            \"@php scripts/init.php\"\n        ]\n    }\n}\n";
+        file_put_contents($root.'/composer.json', $minimal);
 
+        /** @disregard */
         expect(removeSelfFromComposerJson($root))->toBe(true);
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
 
         expect($data)->not->toContainKey('scripts');
     });
@@ -607,7 +641,7 @@ describe('promptPackageName', function () {
     $ask = function (string $input): array {
         $in = fopen('php://memory', 'r+');
 
-        if (!$in) {
+        if (! $in) {
             return [];
         }
 
@@ -615,7 +649,7 @@ describe('promptPackageName', function () {
         rewind($in);
         $out = fopen('php://memory', 'r+');
 
-        if (!$out) {
+        if (! $out) {
             return [];
         }
 
@@ -661,7 +695,7 @@ describe('promptGitInit', function () {
     $ask = function (string $input): array {
         $in = fopen('php://memory', 'r+');
 
-        if (!$in) {
+        if (! $in) {
             return [];
         }
 
@@ -669,7 +703,7 @@ describe('promptGitInit', function () {
         rewind($in);
         $out = fopen('php://memory', 'r+');
 
-        if (!$out) {
+        if (! $out) {
             return [];
         }
 
@@ -737,20 +771,21 @@ describe('initializeGitRepository', function () {
         foreach ($savedGitEnv as $name => $value) {
             if ($value === false) {
                 putenv($name);
+
                 continue;
             }
-            putenv($name . '=' . $value);
+            putenv($name.'='.$value);
         }
     });
 
     $removeFixture = function (string $root): void {
-        exec('rm -rf ' . escapeshellarg($root));
+        exec('rm -rf '.escapeshellarg($root));
     };
 
     $makeRepo = function (): string {
-        $root = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'init-git-spec-' . bin2hex(random_bytes(6));
-        mkdir($root . '/src', 0777, true);
-        file_put_contents($root . '/src/hello.txt', "hello\n");
+        $root = sys_get_temp_dir().DIRECTORY_SEPARATOR.'init-git-spec-'.bin2hex(random_bytes(6));
+        mkdir($root.'/src', 0777, true);
+        file_put_contents($root.'/src/hello.txt', "hello\n");
 
         return $root;
     };
@@ -763,13 +798,13 @@ describe('initializeGitRepository', function () {
     ];
 
     $withoutIdentity = function (): array {
-        $home = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'init-home-spec-' . bin2hex(random_bytes(6));
+        $home = sys_get_temp_dir().DIRECTORY_SEPARATOR.'init-home-spec-'.bin2hex(random_bytes(6));
         mkdir($home, 0777, true);
 
         return [
             'HOME' => $home,
-            'GIT_CONFIG_GLOBAL' => $home . '/gitconfig',
-            'GIT_CONFIG_SYSTEM' => $home . '/systemconfig',
+            'GIT_CONFIG_GLOBAL' => $home.'/gitconfig',
+            'GIT_CONFIG_SYSTEM' => $home.'/systemconfig',
         ];
     };
 
@@ -781,16 +816,16 @@ describe('initializeGitRepository', function () {
             expect(initializeGitRepository($root, 'chore: initial commit :fire:', $identity))
                 ->toEqual('committed');
 
-            expect(is_dir($root . '/.git'))->toBe(true);
+            expect(is_dir($root.'/.git'))->toBe(true);
 
-            [$code, $output] = runCommand('git -C ' . escapeshellarg($root) . ' log -1 --format=%s');
+            [$code, $output] = runCommand('git -C '.escapeshellarg($root).' log -1 --format=%s');
             expect($code)->toEqual(0);
             expect($output)->toEqual('chore: initial commit :fire:');
 
-            [$code, $tracked] = runCommand('git -C ' . escapeshellarg($root) . ' ls-files');
+            [$code, $tracked] = runCommand('git -C '.escapeshellarg($root).' ls-files');
             expect($tracked)->toContain('src/hello.txt');
 
-            [$code, $status] = runCommand('git -C ' . escapeshellarg($root) . ' status --porcelain');
+            [$code, $status] = runCommand('git -C '.escapeshellarg($root).' status --porcelain');
             expect($status)->toEqual('');
 
             $removeFixture($root);
@@ -822,9 +857,9 @@ describe('initializeGitRepository', function () {
             expect(initializeGitRepository($root, 'chore: initial commit :fire:', $withoutIdentity()))
                 ->toEqual('no-identity');
 
-            expect(is_dir($root . '/.git'))->toBe(true);
+            expect(is_dir($root.'/.git'))->toBe(true);
 
-            [$code] = runCommand('git -C ' . escapeshellarg($root) . ' log -1');
+            [$code] = runCommand('git -C '.escapeshellarg($root).' log -1');
             expect($code)->not->toEqual(0);
 
             $removeFixture($root);
@@ -833,12 +868,12 @@ describe('initializeGitRepository', function () {
 
     it('leaves an existing repository alone', function () use ($makeRepo, $removeFixture) {
         $root = $makeRepo();
-        runCommand('git -C ' . escapeshellarg($root) . ' init --quiet');
+        runCommand('git -C '.escapeshellarg($root).' init --quiet');
 
         expect(initializeGitRepository($root, 'chore: initial commit :fire:', null))
             ->toEqual('already-git');
 
-        [$code] = runCommand('git -C ' . escapeshellarg($root) . ' log -1');
+        [$code] = runCommand('git -C '.escapeshellarg($root).' log -1');
         expect($code)->not->toEqual(0);
 
         $removeFixture($root);
@@ -846,13 +881,13 @@ describe('initializeGitRepository', function () {
 
     it('reports when git is unavailable', function () use ($makeRepo, $removeFixture) {
         $root = $makeRepo();
-        $emptyBin = $root . '/empty-bin';
+        $emptyBin = $root.'/empty-bin';
         mkdir($emptyBin);
 
         expect(initializeGitRepository($root, 'chore: initial commit :fire:', ['PATH' => $emptyBin]))
             ->toEqual('git-not-found');
 
-        expect(is_dir($root . '/.git'))->toBe(false);
+        expect(is_dir($root.'/.git'))->toBe(false);
 
         $removeFixture($root);
     });
@@ -878,20 +913,21 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
         foreach ($savedGitEnv as $name => $value) {
             if ($value === false) {
                 putenv($name);
+
                 continue;
             }
-            putenv($name . '=' . $value);
+            putenv($name.'='.$value);
         }
     });
 
     it('commits the bootstrapped state as the initial commit', function () use ($makeFixture, $removeFixture) {
         $root = $makeFixture();
         // the dist tree ships without git metadata
-        exec('rm -rf ' . escapeshellarg($root . '/.git'));
+        exec('rm -rf '.escapeshellarg($root.'/.git'));
 
         $in = fopen('php://memory', 'r+');
 
-        if (!$in) {
+        if (! $in) {
             return;
         }
 
@@ -899,29 +935,29 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
         rewind($in);
         $out = fopen('php://memory', 'r+');
 
-        if (!$out) {
+        if (! $out) {
             return;
         }
 
         $code = bootstrapProject($root, $in, $out, true, ['GITHUB_REPOSITORY' => '']);
 
         expect($code)->toEqual(0);
-        expect(is_dir($root . '/.git'))->toBe(true);
+        expect(is_dir($root.'/.git'))->toBe(true);
 
-        [$logCode, $message] = runCommand('git -C ' . escapeshellarg($root) . ' log -1 --format=%s');
+        [$logCode, $message] = runCommand('git -C '.escapeshellarg($root).' log -1 --format=%s');
         expect($logCode)->toEqual(0);
         expect($message)->toEqual('chore: initial commit :fire:');
 
-        [, $committedComposer] = runCommand('git -C ' . escapeshellarg($root) . ' show HEAD:composer.json');
+        [, $committedComposer] = runCommand('git -C '.escapeshellarg($root).' show HEAD:composer.json');
         expect($committedComposer)->toContain('"name": "e2e/my-lib"');
         expect($committedComposer)->not->toContain('post-create-project-cmd');
 
         [, $committedTree] = runCommand(
-            'git -C ' . escapeshellarg($root) . ' show --pretty=format: --name-only HEAD'
+            'git -C '.escapeshellarg($root).' show --pretty=format: --name-only HEAD'
         );
         expect($committedTree)->not->toContain('CHANGELOG.md');
 
-        [, $worktree] = runCommand('git -C ' . escapeshellarg($root) . ' status --porcelain');
+        [, $worktree] = runCommand('git -C '.escapeshellarg($root).' status --porcelain');
         expect($worktree)->toEqual('');
 
         fclose($in);
@@ -931,25 +967,25 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
 
     it('skips all interaction when not attached to a terminal', function () use ($makeFixture, $removeFixture) {
         $root = $makeFixture();
-        exec('rm -rf ' . escapeshellarg($root . '/.git'));
+        exec('rm -rf '.escapeshellarg($root.'/.git'));
 
-        mkdir($root . '/tests/spec/scripts', 0777, true);
-        file_put_contents($root . '/tests/spec/scripts/init.spec.php', '<?php // template infra');
+        mkdir($root.'/tests/spec/scripts', 0777, true);
+        file_put_contents($root.'/tests/spec/scripts/init.spec.php', '<?php // template infra');
 
         $in = fopen('php://memory', 'r+');
         $out = fopen('php://memory', 'r+');
 
-        if (!$in || !$out) {
+        if (! $in || ! $out) {
             return;
         }
 
         $code = bootstrapProject($root, $in, $out, false, ['GITHUB_REPOSITORY' => '']);
 
         expect($code)->toEqual(0);
-        expect(is_dir($root . '/.git'))->toBe(false);
-        expect(file_exists($root . '/tests/spec/scripts/init.spec.php'))->toBe(false);
+        expect(is_dir($root.'/.git'))->toBe(false);
+        expect(file_exists($root.'/tests/spec/scripts/init.spec.php'))->toBe(false);
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('projek-xyz/template');
 
         fclose($in);
@@ -959,19 +995,19 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
 });
 
 describe('main', function () use ($makeFixture, $removeFixture) {
-    $script = dirname(__DIR__, 3) . '/scripts/init.php';
+    $script = dirname(__DIR__, 3).'/scripts/init.php';
 
     /** Fixture plus a copy of the real bootstrap script. */
     $makeScriptedFixture = function () use ($makeFixture, $script): string {
         $root = $makeFixture();
-        mkdir($root . '/scripts');
-        copy($script, $root . '/scripts/init.php');
+        mkdir($root.'/scripts');
+        copy($script, $root.'/scripts/init.php');
 
         return $root;
     };
 
     $run = function (string $root, array $overrides = []): array {
-        $command = escapeshellarg(PHP_BINARY) . ' ' . escapeshellarg($root . '/scripts/init.php');
+        $command = escapeshellarg(PHP_BINARY).' '.escapeshellarg($root.'/scripts/init.php');
 
         return runCommand($command, $overrides);
     };
@@ -985,14 +1021,14 @@ describe('main', function () use ($makeFixture, $removeFixture) {
         expect($output)->toContain('removed CHANGELOG.md');
         expect(verifyTransformation($root, 'fery/my-lib', true))->toEqual([]);
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('fery/my-lib');
         expect($data['scripts'])->toContainKey('format');
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
 
-        expect(file_exists($root . '/.github/workflows/tests.yml'))->toBe(true);
-        expect(file_exists($root . '/scripts/init.php'))->toBe(false);
-        expect(file_exists($root . '/scripts'))->toBe(false);
+        expect(file_exists($root.'/.github/workflows/tests.yml'))->toBe(true);
+        expect(file_exists($root.'/scripts/init.php'))->toBe(false);
+        expect(file_exists($root.'/scripts'))->toBe(false);
 
         $removeFixture($root);
     });
@@ -1006,21 +1042,21 @@ describe('main', function () use ($makeFixture, $removeFixture) {
         expect($output)->not->toContain('Package name');
         expect($output)->not->toContain('removed composer.lock');
 
-        $data = json_decode(file_get_contents($root . '/composer.json') ?: '{}', true);
+        $data = json_decode(file_get_contents($root.'/composer.json') ?: '{}', true);
         expect($data['name'])->toEqual('projek-xyz/template');
         expect($data['scripts'])->not->toContainKey('post-create-project-cmd');
 
-        expect(file_exists($root . '/composer.lock'))->toBe(true);
-        expect(file_exists($root . '/package-lock.json'))->toBe(true);
-        expect(file_exists($root . '/CHANGELOG.md'))->toBe(false);
-        expect(file_exists($root . '/scripts/init.php'))->toBe(false);
+        expect(file_exists($root.'/composer.lock'))->toBe(true);
+        expect(file_exists($root.'/package-lock.json'))->toBe(true);
+        expect(file_exists($root.'/CHANGELOG.md'))->toBe(false);
+        expect(file_exists($root.'/scripts/init.php'))->toBe(false);
 
         $removeFixture($root);
     });
 
     it('fails loudly when verification fails', function () use ($makeScriptedFixture, $removeFixture, $run) {
         $root = $makeScriptedFixture();
-        chmod($root . '/README.md', 0444);
+        chmod($root.'/README.md', 0444);
 
         [$code, $output] = $run($root, ['GITHUB_REPOSITORY' => 'fery/my-lib']);
 

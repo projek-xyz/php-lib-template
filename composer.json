@@ -23,8 +23,8 @@
         "post-create-project-cmd": [
             "@php scripts/init.php"
         ],
-        "format": "phpcbf --standard=PSR12 src scripts",
-        "lint": "phpcs --standard=PSR12 src scripts -p -n",
+        "format": "pint",
+        "lint": "pint --test",
         "spec": "kahlan --config=tests/config.php",
         "test": [
             "@lint",
@@ -46,7 +46,7 @@
     },
     "require-dev": {
         "kahlan/kahlan": "^6.1",
-        "squizlabs/php_codesniffer": "^4.0"
+        "laravel/pint": "^1.32"
     },
     "config": {
         "optimize-autoloader": true,

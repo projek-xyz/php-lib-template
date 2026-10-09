@@ -36,7 +36,7 @@ function defaultPackageName(string $dirName, ?string $username): string
         return 'projek-xyz/template';
     }
 
-    $package = \strtolower($username . '/' . $dirName);
+    $package = \strtolower($username.'/'.$dirName);
     $package = \preg_replace('/[^a-z0-9\/_.-]+/', '-', $package);
     $package = \preg_replace('/-+/', '-', $package ?: '');
 
@@ -85,7 +85,7 @@ function resolvePackageInput(?string $line, string $default): array
     $valid = \preg_match('/^[a-z0-9][a-z0-9._-]*\/[a-z0-9][a-z0-9._-]*$/', $package) === 1;
 
     if (! $valid) {
-        return [$default, 'Invalid package name format, fallback to default ' . $default];
+        return [$default, 'Invalid package name format, fallback to default '.$default];
     }
 
     return [$package, null];
@@ -96,19 +96,19 @@ function resolvePackageInput(?string $line, string $default): array
  *
  * Returns null on end of input, otherwise the chosen or default name.
  *
- * @param resource $in
- * @param resource $out
+ * @param  resource  $in
+ * @param  resource  $out
  */
 function promptPackageName($in, $out, string $default): ?string
 {
-    \fwrite($out, 'Package name [' . $default . ']: ');
+    \fwrite($out, 'Package name ['.$default.']: ');
 
     $line = \fgets($in);
     [$package, $warning] = resolvePackageInput($line === false ? null : $line, $default);
 
     if ($warning !== null) {
-        $colored = \str_replace($default, ANSI_YELLOW . $default . ANSI_RESET, $warning);
-        \fwrite($out, $colored . "\n");
+        $colored = \str_replace($default, ANSI_YELLOW.$default.ANSI_RESET, $warning);
+        \fwrite($out, $colored."\n");
     }
 
     return $package;
@@ -119,12 +119,12 @@ function promptPackageName($in, $out, string $default): ?string
  *
  * Defaults to no on an empty answer or end of input.
  *
- * @param resource $in
- * @param resource $out
+ * @param  resource  $in
+ * @param  resource  $out
  */
 function promptGitInit($in, $out, string $package): bool
 {
-    \fwrite($out, 'Do you want to git init your ' . ANSI_YELLOW . $package . ANSI_RESET . ' repo? [y/N] ');
+    \fwrite($out, 'Do you want to git init your '.ANSI_YELLOW.$package.ANSI_RESET.' repo? [y/N] ');
 
     $line = \fgets($in);
 
@@ -142,7 +142,7 @@ function promptGitInit($in, $out, string $package): bool
  *
  * Overrides are merged over the current environment; null inherits it.
  *
- * @param ?array<string, string> $overrides
+ * @param  ?array<string, string>  $overrides
  * @return array{0: int, 1: string}
  */
 function runCommand(string $command, ?array $overrides = null): array
@@ -175,17 +175,17 @@ function runCommand(string $command, ?array $overrides = null): array
     \fclose($pipes[1]);
     \fclose($pipes[2]);
 
-    return [\proc_close($process), \trim($stdout . $stderr)];
+    return [\proc_close($process), \trim($stdout.$stderr)];
 }
 
 /**
  * Checks whether a command can be executed.
  *
- * @param ?array<string, string> $overrides
+ * @param  ?array<string, string>  $overrides
  */
 function isCommandAvailable(string $command, ?array $overrides = null): bool
 {
-    [$code] = runCommand($command . ' --version', $overrides);
+    [$code] = runCommand($command.' --version', $overrides);
 
     return $code === 0;
 }
@@ -196,7 +196,7 @@ function isCommandAvailable(string $command, ?array $overrides = null): bool
  * Returns a status word: git-not-found, already-git, no-identity,
  * committed, init-failed, or commit-failed.
  *
- * @param ?array<string, string> $overrides
+ * @param  ?array<string, string>  $overrides
  */
 function initializeGitRepository(string $root, string $message, ?array $overrides = null): string
 {
@@ -204,19 +204,19 @@ function initializeGitRepository(string $root, string $message, ?array $override
         return 'git-not-found';
     }
 
-    if (\is_dir($root . '/.git')) {
+    if (\is_dir($root.'/.git')) {
         return 'already-git';
     }
 
-    $prefix = 'git -C ' . \escapeshellarg($root);
+    $prefix = 'git -C '.\escapeshellarg($root);
 
-    [$code] = runCommand($prefix . ' init --quiet', $overrides);
+    [$code] = runCommand($prefix.' init --quiet', $overrides);
 
     if ($code !== 0) {
         return 'init-failed';
     }
 
-    runCommand($prefix . ' add -A', $overrides);
+    runCommand($prefix.' add -A', $overrides);
 
     $envName = $overrides['GIT_AUTHOR_NAME'] ?? \getenv('GIT_AUTHOR_NAME');
     $name = '';
@@ -224,7 +224,7 @@ function initializeGitRepository(string $root, string $message, ?array $override
     if (\is_string($envName) && $envName !== '') {
         $name = $envName;
     } else {
-        [$configCode, $configName] = runCommand($prefix . ' config user.name', $overrides);
+        [$configCode, $configName] = runCommand($prefix.' config user.name', $overrides);
         $name = $configCode === 0 ? $configName : '';
     }
 
@@ -234,7 +234,7 @@ function initializeGitRepository(string $root, string $message, ?array $override
     if (\is_string($envEmail) && $envEmail !== '') {
         $email = $envEmail;
     } else {
-        [$configCode, $configEmail] = runCommand($prefix . ' config user.email', $overrides);
+        [$configCode, $configEmail] = runCommand($prefix.' config user.email', $overrides);
         $email = $configCode === 0 ? $configEmail : '';
     }
 
@@ -242,7 +242,7 @@ function initializeGitRepository(string $root, string $message, ?array $override
         return 'no-identity';
     }
 
-    [$code] = runCommand($prefix . ' commit --quiet -m ' . \escapeshellarg($message), $overrides);
+    [$code] = runCommand($prefix.' commit --quiet -m '.\escapeshellarg($message), $overrides);
 
     return $code === 0 ? 'committed' : 'commit-failed';
 }
@@ -290,24 +290,24 @@ function bootstrapProject(string $root, $stdin, $stdout, bool $interactive, arra
     uncommentExportIgnoreList($root);
 
     foreach ($removed as $file) {
-        \fwrite($stdout, 'removed ' . $file . PHP_EOL);
+        \fwrite($stdout, 'removed '.$file.PHP_EOL);
     }
 
     $failures = verifyTransformation($root, $target, $githubMode);
 
     if ($failures !== []) {
         foreach ($failures as $failure) {
-            \fwrite($stdout, 'FAIL: ' . $failure . PHP_EOL);
+            \fwrite($stdout, 'FAIL: '.$failure.PHP_EOL);
         }
 
         return 1;
     }
 
-    \fwrite($stdout, 'verified' . PHP_EOL);
+    \fwrite($stdout, 'verified'.PHP_EOL);
 
     removeSelfFromComposerJson($root);
-    removePath($root . '/scripts/init.php');
-    @\rmdir($root . '/scripts');
+    removePath($root.'/scripts/init.php');
+    @\rmdir($root.'/scripts');
 
     if ($initGit) {
         $messages = [
@@ -319,7 +319,7 @@ function bootstrapProject(string $root, $stdin, $stdout, bool $interactive, arra
             'commit-failed' => 'git: commit failed',
         ];
         $status = initializeGitRepository($root, GIT_INITIAL_COMMIT);
-        \fwrite($stdout, ($messages[$status] ?? 'git: ' . $status) . PHP_EOL);
+        \fwrite($stdout, ($messages[$status] ?? 'git: '.$status).PHP_EOL);
     }
 
     return 0;
@@ -349,7 +349,7 @@ function main(): int
  * Skips dependency directories, binary files, and this script itself.
  * The visitor receives the relative path and the file content.
  *
- * @param callable(string, string): void $visitor
+ * @param  callable(string, string): void  $visitor
  */
 function walkTemplateFiles(string $root, callable $visitor): void
 {
@@ -371,7 +371,7 @@ function walkTemplateFiles(string $root, callable $visitor): void
         $skip = $path === __FILE__;
 
         foreach ($skipped as $directory) {
-            if (\str_contains('/' . $relative . '/', $directory)) {
+            if (\str_contains('/'.$relative.'/', $directory)) {
                 $skip = true;
                 break;
             }
@@ -419,7 +419,7 @@ function rewriteTemplateReferences(string $root, string $target): array
         $replaced = \str_replace($patterns, $target, $content);
 
         if ($replaced !== $content) {
-            \file_put_contents($root . '/' . $relative, $replaced);
+            \file_put_contents($root.'/'.$relative, $replaced);
             $changed[] = $relative;
         }
     });
@@ -440,7 +440,7 @@ function resetPackageVersions(string $root): void
     $targets = ['package.json', 'package-lock.json'];
 
     foreach ($targets as $file) {
-        $path = $root . '/' . $file;
+        $path = $root.'/'.$file;
 
         if (! \is_file($path)) {
             continue;
@@ -489,6 +489,7 @@ function removePath(string $path): bool
     foreach ($iterator as $item) {
         if ($item->isDir()) {
             \rmdir($item->getPathname());
+
             continue;
         }
 
@@ -504,7 +505,7 @@ function removePath(string $path): bool
  * Lock files are only deleted on the github path, and only when the tool
  * that regenerates them is available. Returns the sorted removed paths.
  *
- * @param array{composer?: bool, npm?: bool} $capabilities
+ * @param  array{composer?: bool, npm?: bool}  $capabilities
  * @return string[]
  */
 function removeTemplateOnlyFiles(string $root, bool $githubMode, array $capabilities): array
@@ -531,7 +532,7 @@ function removeTemplateOnlyFiles(string $root, bool $githubMode, array $capabili
     $removed = [];
 
     foreach ($targets as $target) {
-        if (removePath($root . '/' . $target)) {
+        if (removePath($root.'/'.$target)) {
             $removed[] = $target;
         }
     }
@@ -548,7 +549,7 @@ function removeTemplateOnlyFiles(string $root, bool $githubMode, array $capabili
  */
 function uncommentExportIgnoreList(string $root): int
 {
-    $path = $root . '/.gitattributes';
+    $path = $root.'/.gitattributes';
 
     if (! \is_file($path)) {
         return 0;
@@ -596,18 +597,18 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
     ];
 
     foreach ($mustBeGone as $file) {
-        if (\file_exists($root . '/' . $file)) {
-            $failures[] = $file . ' still present';
+        if (\file_exists($root.'/'.$file)) {
+            $failures[] = $file.' still present';
         }
     }
 
-    $packageJson = \file_get_contents($root . '/package.json');
+    $packageJson = \file_get_contents($root.'/package.json');
 
     if ($packageJson === false || ! \str_contains($packageJson, '"version": "0.0.0"')) {
         $failures[] = 'package.json version is not 0.0.0';
     }
 
-    $attributes = \file_get_contents($root . '/.gitattributes');
+    $attributes = \file_get_contents($root.'/.gitattributes');
     $totalEntries = $attributes === false ? 0 : \preg_match_all('/^.*export-ignore$/m', $attributes);
     $activeEntries = $attributes === false ? 0 : \preg_match_all('/^[^#\s].*export-ignore$/m', $attributes);
 
@@ -616,20 +617,20 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
     }
 
     if ($target !== null) {
-        $composerJson = \file_get_contents($root . '/composer.json');
+        $composerJson = \file_get_contents($root.'/composer.json');
 
         if (
             $composerJson === false
-            || \preg_match('/"name":\s*"' . \preg_quote($target, '/') . '"/', $composerJson) !== 1
+            || \preg_match('/"name":\s*"'.\preg_quote($target, '/').'"/', $composerJson) !== 1
         ) {
-            $failures[] = 'composer.json name is not ' . $target;
+            $failures[] = 'composer.json name is not '.$target;
         }
 
         if (
             $packageJson === false
-            || \preg_match('/"name":\s*"@' . \preg_quote($target, '/') . '"/', $packageJson) !== 1
+            || \preg_match('/"name":\s*"@'.\preg_quote($target, '/').'"/', $packageJson) !== 1
         ) {
-            $failures[] = 'package.json name is not @' . $target;
+            $failures[] = 'package.json name is not @'.$target;
         }
 
         $patterns = ['projek-xyz/template', 'projek-xyz/php-lib-template'];
@@ -642,17 +643,17 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
             $patterns
         ): void {
             if (\str_contains($content, $patterns[0]) || \str_contains($content, $patterns[1])) {
-                $failures[] = 'residual template reference in ' . $relative;
+                $failures[] = 'residual template reference in '.$relative;
             }
         });
     }
 
     if (! $githubMode) {
-        if (! \is_file($root . '/composer.lock')) {
+        if (! \is_file($root.'/composer.lock')) {
             $failures[] = 'composer.lock missing';
         }
 
-        if (! \is_file($root . '/package-lock.json')) {
+        if (! \is_file($root.'/package-lock.json')) {
             $failures[] = 'package-lock.json missing';
         }
     }
@@ -667,7 +668,7 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
  */
 function removeSelfFromComposerJson(string $root): bool
 {
-    $path = $root . '/composer.json';
+    $path = $root.'/composer.json';
 
     if (! \is_file($path)) {
         return false;
@@ -692,7 +693,7 @@ function removeSelfFromComposerJson(string $root): bool
 
     unset($data['scripts']['post-create-project-cmd']);
 
-    // scripts/ is about to self-delete; phpcs/phpcbf exit non-zero on missing paths
+    // scripts/ is about to self-delete;
     foreach (['format', 'lint'] as $name) {
         if (isset($data['scripts'][$name]) && \is_string($data['scripts'][$name])) {
             $data['scripts'][$name] = \preg_replace('/\sscripts(?=\s|$)/', '', $data['scripts'][$name], 1);
@@ -709,7 +710,7 @@ function removeSelfFromComposerJson(string $root): bool
         return false;
     }
 
-    \file_put_contents($path, $encoded . "\n");
+    \file_put_contents($path, $encoded."\n");
 
     return true;
 }
