@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.6.2](https://github.com/projek-xyz/template/compare/v0.6.1...v0.6.2) (2026-10-12)
+
+### Features
+
+* swap `php-codesniffer` with `laravel-pint` ([5c5a954](https://github.com/projek-xyz/template/commit/5c5a9543968b6970d907177a8b073e06fd1921a9))
+
 ## [0.6.1](https://github.com/projek-xyz/template/compare/v0.6.0...v0.6.1) (2026-10-06)
 
 ### Features
