@@ -8,7 +8,7 @@ on:
 jobs:
   release:
     name: Release
-    uses: projek-xyz/actions/.github/workflows/release.yml@87f32f457f1cc99f163afcc7634a339618017c55
+    uses: projek-xyz/actions/.github/workflows/release.yml@429c195e277caa9fed01a9d550794dc61ad90c1f # main @ 2026-10-14
 
     permissions:
       contents: write
