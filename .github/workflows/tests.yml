@@ -17,6 +17,8 @@ jobs:
       github.event.created == false ||
       github.event.before != '0000000000000000000000000000000000000000'
     uses: projek-xyz/actions/.github/workflows/prepare.yml@429c195e277caa9fed01a9d550794dc61ad90c1f # main @ 2026-10-14
+    with:
+      php-version: '8.4'
     secrets:
       COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
 
@@ -36,7 +38,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.0', '8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['8.3', '8.4', '8.5']
 
     steps:
       - name: Checkout

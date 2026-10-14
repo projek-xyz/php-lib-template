@@ -4,21 +4,21 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4b5bd584b395b68663fa9038504a41b0",
+    "content-hash": "608dc7778c83a0d4b12e8e89d3467f37",
     "packages": [],
     "packages-dev": [
         {
             "name": "kahlan/kahlan",
-            "version": "6.1.2",
+            "version": "6.1.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/kahlan/kahlan.git",
-                "reference": "933a9d698ce9ae2cd7accb704a40723bdaa9316b"
+                "reference": "e30c6fc714c6e51e45e185ca399427951ed9a5a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/kahlan/kahlan/zipball/933a9d698ce9ae2cd7accb704a40723bdaa9316b",
-                "reference": "933a9d698ce9ae2cd7accb704a40723bdaa9316b",
+                "url": "https://api.github.com/repos/kahlan/kahlan/zipball/e30c6fc714c6e51e45e185ca399427951ed9a5a1",
+                "reference": "e30c6fc714c6e51e45e185ca399427951ed9a5a1",
                 "shasum": ""
             },
             "require": {
@@ -62,9 +62,9 @@
             ],
             "support": {
                 "issues": "https://github.com/kahlan/kahlan/issues",
-                "source": "https://github.com/kahlan/kahlan/tree/6.1.2"
+                "source": "https://github.com/kahlan/kahlan/tree/6.1.3"
             },
-            "time": "2026-09-28T15:14:56+00:00"
+            "time": "2026-10-13T04:52:52+00:00"
         },
         {
             "name": "laravel/pint",
@@ -143,7 +143,7 @@
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {
-        "php": ">=8.0"
+        "php": ">=8.3"
     },
     "platform-dev": {},
     "plugin-api-version": "2.9.0"
