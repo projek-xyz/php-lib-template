@@ -512,10 +512,12 @@ function removeTemplateOnlyFiles(string $root, bool $githubMode, array $capabili
 {
     $targets = [
         '.github/README.md',
+        '.github/wiki',
         '.github/workflows/init.yml',
         '.agents/rules',
         'CHANGELOG.md',
         // the spec mirrors scripts/, which self-deletes: never ship it alone
+        'docs',
         'tests/spec/scripts',
     ];
 
@@ -591,9 +593,11 @@ function verifyTransformation(string $root, ?string $target, bool $githubMode): 
 
     $mustBeGone = [
         '.github/README.md',
+        '.github/wiki',
         '.github/workflows/init.yml',
         '.agents/rules',
         'CHANGELOG.md',
+        'docs',
     ];
 
     foreach ($mustBeGone as $file) {
