@@ -23,12 +23,18 @@
         "post-create-project-cmd": [
             "@php scripts/init.php"
         ],
-        "format": "pint",
-        "lint": "pint --test",
-        "spec": "kahlan --config=tests/config.php",
-        "test": [
+        "format": [
+            "pint"
+        ],
+        "lint": [
+            "pint --test"
+        ],
+        "spec": [
             "@lint",
-            "@spec"
+            "@test"
+        ],
+        "test": [
+            "kahlan --config=tests/config.php"
         ]
     },
     "autoload": {

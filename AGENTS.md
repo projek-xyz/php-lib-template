@@ -6,10 +6,10 @@ PHP library template (`projek-xyz/template`), a single Composer package.
 
 | Action | Command |
 |--------|---------|
-| Run all checks (lint + test) | `composer test` |
-| Format code (Pint, Laravel preset) | `composer format` |
+| Run all checks (lint + tests) | `composer spec` |
+| Run specs/Kahlan tests | `composer test` |
 | Lint code (Pint, Laravel preset) | `composer lint` |
-| Run specs/Kahlan tests | `composer spec` |
+| Format code (Pint, Laravel preset) | `composer format` |
 
 ## Project Structure
 
@@ -37,7 +37,7 @@ vendor/               # Composer dependencies
 - Test framework: **Kahlan** (v6.x)
 - Spec files live in `tests/spec/**/*.spec.php` and use `describe`/`it` + `expect()` syntax
 - Spec files should mirrors `src/` files structures: `src/Foo.php` -> `tests/spec/Foo.spec.php`; `src/Foo/Bar.php` -> `tests/spec/Foo/Bar.spec.php`
-- Run all specs with `composer spec`; run a single spec file: `composer spec -- --spec=tests/spec/filename.spec.php`
+- Run all specs with `composer test` (use `composer spec` to lint first); run a single spec file: `composer test -- --spec=tests/spec/filename.spec.php`
 - Exception: `tests/spec/scripts/init.spec.php` mirrors `scripts/init.php` (both template-only, removed on instantiation)
 - Stub file live in `tests/stub/` with `Stubs\` PSR-4 prefix (autoload-dev)
 - CI runs tests on PHP 8.3–8.5 matrix (`.github/workflows/tests.yml`), local dev pins PHP 8.4 via `mise` (see `.tool-versions`)
