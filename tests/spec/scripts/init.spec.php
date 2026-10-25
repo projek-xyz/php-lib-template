@@ -23,7 +23,7 @@ use function Projek\templateUsername;
 use function Projek\uncommentExportIgnoreList;
 use function Projek\verifyTransformation;
 
-require_once dirname(__DIR__, 3).'/scripts/init.php';
+require_once \dirname(__DIR__, 3).'/scripts/init.php';
 
 /**
  * Builds a throwaway template tree mirroring the real repository shape.
@@ -475,14 +475,14 @@ describe('verifyTransformation', function () use ($makeFixture, $removeFixture) 
 
     /** Runs the transformation steps in main() order, optionally skipping some. */
     $transform = function (string $root, ?string $target, bool $githubMode, array $skip = []): void {
-        if (! in_array('rewrite', $skip, true) && $target !== null) {
+        if (! \in_array('rewrite', $skip, true) && $target !== null) {
             rewriteTemplateReferences($root, $target);
         }
 
         resetPackageVersions($root);
         removeTemplateOnlyFiles($root, $githubMode, ['composer' => true, 'npm' => true]);
 
-        if (! in_array('uncomment', $skip, true)) {
+        if (! \in_array('uncomment', $skip, true)) {
             uncommentExportIgnoreList($root);
         }
     };
@@ -995,7 +995,7 @@ describe('bootstrapProject', function () use ($makeFixture, $removeFixture) {
 });
 
 describe('main', function () use ($makeFixture, $removeFixture) {
-    $script = dirname(__DIR__, 3).'/scripts/init.php';
+    $script = \dirname(__DIR__, 3).'/scripts/init.php';
 
     /** Fixture plus a copy of the real bootstrap script. */
     $makeScriptedFixture = function () use ($makeFixture, $script): string {

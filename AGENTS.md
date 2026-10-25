@@ -30,7 +30,7 @@ vendor/               # Composer dependencies
 
 - Run `composer format -- --format agent` to fix any formatting issues
 - Run `composer format -- --test --format agent` to verify the changes matches the project's expected style
-- PHP version requirement: `>=8.0` (defined in `composer.json`). Keep `src/` and `tests/` compatible with declared minimum PHP version.
+- PHP version requirement: `>=8.3` (defined in `composer.json`). Keep `src/` and `tests/` compatible with declared minimum PHP version.
 
 ## Testing
 
@@ -40,7 +40,7 @@ vendor/               # Composer dependencies
 - Run all specs with `composer spec`; run a single spec file: `composer spec -- --spec=tests/spec/filename.spec.php`
 - Exception: `tests/spec/scripts/init.spec.php` mirrors `scripts/init.php` (both template-only, removed on instantiation)
 - Stub file live in `tests/stub/` with `Stubs\` PSR-4 prefix (autoload-dev)
-- CI runs tests on PHP 8.0–8.5 matrix (`.github/workflows/tests.yml`), local dev pins PHP 8.4 via `mise` (see `.tool-versions`)
+- CI runs tests on PHP 8.3–8.5 matrix (`.github/workflows/tests.yml`), local dev pins PHP 8.4 via `mise` (see `.tool-versions`)
 
 ## Git workflow
 
@@ -52,7 +52,8 @@ vendor/               # Composer dependencies
 
 - All `*.php` source files use `declare(strict_types=1)`, enforced by the `composer format`
 - Files are namespaced under `Projek\` (or `Stubs\` for test stubs, fixtures and helpers)
-- Classes and functions **must be explicitly qualified**: either a `use` import or a `\` prefix — **never a bare call in a `strict_types` file** (e.g. DO `use function sprintf;` + `sprintf();`, or `\sprintf();`; DON'T call `sprintf();` unqualified)
+- Classes and functions from other namespaces **must be explicitly qualified** via a `use` import (e.g. `use function sprintf;`) — never an inline `\` prefix on the call; Pint's `fully_qualified_strict_types` converts inline FQCNs into imports
+- Native function calls follow Pint's `native_function_invocation`: compiler-optimized functions stay bare (`sprintf()`, `trim()`), the rest keep the `\` prefix (`\is_resource()`). Don't hand-pick the form — `composer format` decides
 - Documentation templates available in:
   - `docs/` is a Jekyll GitHub Pages site (remote theme `just-the-docs`)
   - `.github/wiki/` is synced to the GitHub wiki by the `wiki` job in `.github/workflows/publish.yml` when a `v*.*.*` tag is pushed.

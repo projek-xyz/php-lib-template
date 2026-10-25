@@ -8,6 +8,7 @@ declare(strict_types=1);
 
 use Kahlan\Filter\Filters;
 use Kahlan\Reporter\Coverage\Exporter;
+use Kahlan\Scope;
 
 /** @var Kahlan\Cli\Kahlan $this */
 $cli = $this->commandLine();
@@ -34,7 +35,7 @@ Filters::apply($this, 'reporting', function ($next) {
 });
 
 Filters::apply($this, 'run', function ($next) {
-    /** @var Kahlan\Scope $scope */
+    /** @var Scope $scope */
     $scope = $this->suite()->root()->scope(); // The top most describe scope.
 
     $scope->stubsDir = function (string ...$paths) {
