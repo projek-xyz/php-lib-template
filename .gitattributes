@@ -11,6 +11,7 @@
 # AGENTS.md          export-ignore
 CHANGELOG.md       export-ignore
 composer.lock      export-ignore
+# mise.toml          export-ignore
 # package.json       export-ignore
 # package-lock.json  export-ignore
 # tests              export-ignore
