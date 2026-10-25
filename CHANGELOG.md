@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [0.6.3](https://github.com/projek-xyz/template/compare/v0.6.2...v0.6.3) (2026-10-25)
+
+### Features
+
+* **pint:** add `native_function_invocation` rule ([5fd343a](https://github.com/projek-xyz/template/commit/5fd343aeef2a57f238c77b8f2af5add14a0dd09f))
+* remove `docs` and `.github/wiki` directory on initiation ([9a15bfd](https://github.com/projek-xyz/template/commit/9a15bfd614e9f854a5e761009d617c416e827a4f))
+
 ## [0.6.2](https://github.com/projek-xyz/template/compare/v0.6.1...v0.6.2) (2026-10-12)
 
 ### Features
