@@ -16,7 +16,7 @@ jobs:
     if: >-
       github.event.created == false ||
       github.event.before != '0000000000000000000000000000000000000000'
-    uses: projek-xyz/actions/.github/workflows/prepare.yml@a84ced1eab6fac0576ed5cdd43f6ee0dfa5044a3 # main @ 2026-11-02
+    uses: projek-xyz/actions/.github/workflows/prepare.yml@b8889b2415c01ca846b5865dcbacbed0439cff06 # main @ 2026-11-13
     with:
       php-version: '8.4'
     secrets:
@@ -83,6 +83,6 @@ jobs:
     name: Reports
     needs: [prepare, tests]
     if: needs.prepare.outputs.should-reports == '1'
-    uses: projek-xyz/actions/.github/workflows/report.yml@a84ced1eab6fac0576ed5cdd43f6ee0dfa5044a3 # main @ 2026-11-02
+    uses: projek-xyz/actions/.github/workflows/report.yml@b8889b2415c01ca846b5865dcbacbed0439cff06 # main @ 2026-11-13
     with:
       has-coveralls: ${{ needs.prepare.outputs.has-coveralls == '1' }}
